@@ -166,6 +166,7 @@ export default function LayupList() {
   });
   const [isAuthed, setIsAuthed] = React.useState(() => localStorage.getItem(AUTH_STORAGE_KEY) === "true");
   const [loginForm, setLoginForm] = React.useState({ username: "", password: "", error: "" });
+  const [isLoginFormVisible, setIsLoginFormVisible] = React.useState(false);
   const [newProfessor, setNewProfessor] = React.useState({
     name: "",
     courses: "",
@@ -199,6 +200,7 @@ export default function LayupList() {
       setIsAuthed(true);
       localStorage.setItem(AUTH_STORAGE_KEY, "true");
       setLoginForm({ username: "", password: "", error: "" });
+      setIsLoginFormVisible(false);
     } else {
       setLoginForm((prev) => ({ ...prev, error: "Invalid credentials. Please try again." }));
     }
@@ -284,8 +286,8 @@ export default function LayupList() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100 px-6 py-12">
       <div className="mx-auto max-w-5xl space-y-10">
-        <header className="text-center">
-          <div className="mb-4 flex items-center justify-between">
+        <header className="space-y-6">
+          <div className="flex items-start justify-between">
             <div className="text-left">
               <p className="text-sm tracking-wide uppercase text-orange-400">LayupList</p>
               <h1 className="text-3xl font-bold text-white sm:text-4xl">UVA Law LayupList</h1>
@@ -302,41 +304,49 @@ export default function LayupList() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleLogin} className="space-y-1 rounded-xl border border-white/10 bg-white/5 p-3 text-left text-xs text-slate-200">
-                  <p className="font-semibold text-white">Admin login</p>
-                  <input
-                    type="text"
-                    placeholder="Username"
-                    value={loginForm.username}
-                    onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
-                    required
-                  />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={loginForm.password}
-                    onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
-                    required
-                  />
-                  {loginForm.error && <p className="text-[11px] text-red-400">{loginForm.error}</p>}
+                <div>
                   <button
-                    type="submit"
-                    className="w-full rounded-lg bg-orange-500 py-1 text-xs font-semibold text-white transition hover:bg-orange-600"
+                    className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:border-orange-300"
+                    onClick={() => setIsLoginFormVisible((prev) => !prev)}
                   >
                     Log in
                   </button>
-                </form>
+                  {isLoginFormVisible && (
+                    <form
+                      onSubmit={handleLogin}
+                      className="mt-2 w-48 space-y-1 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-200"
+                    >
+                      <input
+                        type="text"
+                        placeholder="Username"
+                        value={loginForm.username}
+                        onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
+                        required
+                      />
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={loginForm.password}
+                        onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
+                        required
+                      />
+                      {loginForm.error && <p className="text-[11px] text-red-400">{loginForm.error}</p>}
+                      <button
+                        type="submit"
+                        className="w-full rounded-lg bg-orange-500 py-1 text-xs font-semibold text-white transition hover:bg-orange-600"
+                      >
+                        Submit
+                      </button>
+                    </form>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
-          <p className="mx-auto mt-2 max-w-2xl text-base text-slate-300">
-            Search professors, scan their median GPAs, and read UVA student reviews before locking in your class list.
-          </p>
-
-          <div className="mt-6">
+          <div>
             <label htmlFor="prof-search" className="sr-only">
               Search professors or courses
             </label>
@@ -359,8 +369,8 @@ export default function LayupList() {
           </div>
         </header>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/30">
-          {isAuthed ? (
+        {isAuthed && (
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/30">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -368,12 +378,6 @@ export default function LayupList() {
                   <h2 className="text-2xl font-semibold text-white">Add Professors & Reviews</h2>
                   <p className="text-sm text-slate-300">Add-only access keeps existing data safe.</p>
                 </div>
-                <button
-                  className="rounded-xl border border-white/20 px-4 py-2 text-xs text-slate-200 hover:border-orange-300 hover:text-white"
-                  onClick={handleLogout}
-                >
-                  Log out
-                </button>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
@@ -478,39 +482,8 @@ export default function LayupList() {
 
               {formMessage && <p className="text-sm text-orange-300">{formMessage}</p>}
             </div>
-          ) : (
-            <form
-              onSubmit={handleLogin}
-              className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/40 p-6 text-center shadow-xl shadow-black/30"
-            >
-              <p className="text-xs uppercase tracking-wide text-orange-300">Admin Access</p>
-              <h2 className="text-2xl font-semibold text-white">Log in to add profiles or reviews</h2>
-              <input
-                type="text"
-                placeholder="Username"
-                value={loginForm.username}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={loginForm.password}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500"
-                required
-              />
-              {loginForm.error && <p className="text-sm text-red-400">{loginForm.error}</p>}
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-orange-500 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
-              >
-                Log In
-              </button>
-            </form>
-          )}
-        </section>
+          </section>
+        )}
 
         {searchTerm.trim() && (
           <section className="rounded-3xl border border-white/10 bg-slate-900/40 p-6 shadow-xl shadow-black/30">
