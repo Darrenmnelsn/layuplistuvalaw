@@ -61,6 +61,7 @@ const schedule = [
 
 const ADMIN_ACCOUNTS = [{ username: "bte4wz", password: "bte4wz2028" }];
 const PROFESSOR_STORAGE_KEY = "layuplist:professors";
+const PENDING_REVIEWS_KEY = "layuplist:pendingReviews";
 const AUTH_STORAGE_KEY = "layuplist:isAuthed";
 
 const defaultProfessors = [
@@ -257,6 +258,17 @@ export default function LayupList() {
   const [isAuthed, setIsAuthed] = React.useState(() => localStorage.getItem(AUTH_STORAGE_KEY) === "true");
   const [loginForm, setLoginForm] = React.useState({ username: "", password: "", error: "" });
   const [isLoginFormVisible, setIsLoginFormVisible] = React.useState(false);
+  const [pendingReviews, setPendingReviews] = React.useState(() => {
+    const stored = localStorage.getItem(PENDING_REVIEWS_KEY);
+    try {
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.warn("Failed to parse pending reviews", error);
+      return [];
+    }
+  });
+  const [showGuestForm, setShowGuestForm] = React.useState(false);
+  const [guestReview, setGuestReview] = React.useState({ professorName: "", student: "", text: "" });
   const [newProfessor, setNewProfessor] = React.useState({
     name: "",
     courses: "",
@@ -270,6 +282,9 @@ export default function LayupList() {
   React.useEffect(() => {
     localStorage.setItem(PROFESSOR_STORAGE_KEY, JSON.stringify(professorData));
   }, [professorData]);
+  React.useEffect(() => {
+    localStorage.setItem(PENDING_REVIEWS_KEY, JSON.stringify(pendingReviews));
+  }, [pendingReviews]);
 
   const professorsByGpa = React.useMemo(() => [...professorData].sort((a, b) => b.gpa - a.gpa), [professorData]);
   const filteredProfessors = React.useMemo(() => {
@@ -373,6 +388,45 @@ export default function LayupList() {
     setFormMessage("Review added successfully.");
   };
 
+  const handleGuestReviewChange = (event) => {
+    const { name, value } = event.target;
+    setGuestReview((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleGuestReviewSubmit = (event) => {
+    event.preventDefault();
+    if (!guestReview.professorName || !guestReview.student || !guestReview.text) return;
+    setPendingReviews((prev) => [...prev, guestReview]);
+    setGuestReview({ professorName: "", student: "", text: "" });
+    setShowGuestForm(false);
+  };
+
+  const handleApprovePending = (index) => {
+    const submission = pendingReviews[index];
+    const { professorName, student, text } = submission;
+    const exists = professorData.some((professor) => professor.name === professorName);
+    if (!exists) {
+      alert(`Professor "${professorName}" not found. Add the profile first, then approve this review.`);
+      return;
+    }
+    setProfessorData((prev) =>
+      prev.map((professor) => {
+        if (professor.name === professorName) {
+          return {
+            ...professor,
+            reviews: [...professor.reviews, { student, text }],
+          };
+        }
+        return professor;
+      }),
+    );
+    setPendingReviews((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleDismissPending = (index) => {
+    setPendingReviews((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const handleDeleteProfessor = (name) => {
     if (!window.confirm(`Remove ${name} from LayupList?`)) return;
     setProfessorData((prev) => prev.filter((professor) => professor.name !== name));
@@ -405,15 +459,7 @@ export default function LayupList() {
                   >
                     Log out
                   </button>
-                    {isAuthed && (
-                      <button
-                        onClick={() => handleDeleteProfessor(professor.name)}
-                        className="rounded-lg border border-white/20 px-2 py-1 text-[11px] text-slate-100 hover:border-red-400 hover:text-white"
-                      >
-                        Delete Profile
-                      </button>
-                    )}
-                  </div>
+                </div>
               ) : (
                 <div>
                   <button
@@ -461,7 +507,7 @@ export default function LayupList() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-3">
             <label htmlFor="prof-search" className="sr-only">
               Search professors or courses
             </label>
@@ -481,6 +527,54 @@ export default function LayupList() {
                 ? `Showing ${filteredProfessors.length} result${filteredProfessors.length === 1 ? "" : "s"}`
                 : `Enter a professor or course to display profiles`}
             </p>
+            <div className="text-center">
+              <button
+                className="rounded-lg border border-white/20 px-4 py-2 text-xs font-semibold text-white hover:border-orange-300"
+                onClick={() => setShowGuestForm((prev) => !prev)}
+              >
+                Submit review as guest
+              </button>
+            </div>
+            {showGuestForm && (
+              <form
+                onSubmit={handleGuestReviewSubmit}
+                className="mx-auto flex max-w-2xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-left text-xs text-white"
+              >
+                <input
+                  type="text"
+                  name="professorName"
+                  value={guestReview.professorName}
+                  onChange={handleGuestReviewChange}
+                  placeholder="Professor name"
+                  className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                  required
+                />
+                <input
+                  type="text"
+                  name="student"
+                  value={guestReview.student}
+                  onChange={handleGuestReviewChange}
+                  placeholder="Your name"
+                  className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                  required
+                />
+                <textarea
+                  name="text"
+                  value={guestReview.text}
+                  onChange={handleGuestReviewChange}
+                  placeholder="Review details"
+                  className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                  rows="4"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="rounded-xl bg-teal-500 py-2 text-sm font-semibold text-white transition hover:bg-teal-600"
+                >
+                  Send for approval
+                </button>
+              </form>
+            )}
           </div>
         </header>
 
@@ -596,6 +690,35 @@ export default function LayupList() {
               </div>
 
               {formMessage && <p className="text-sm text-orange-300">{formMessage}</p>}
+
+              {pendingReviews.length > 0 && (
+                <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4">
+                  <p className="text-xs uppercase tracking-wide text-orange-300">Guest submissions</p>
+                  <div className="mt-3 space-y-3">
+                    {pendingReviews.map((submission, idx) => (
+                      <div key={`pending-${idx}`} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+                        <p className="font-semibold text-white">{submission.professorName}</p>
+                        <p className="text-xs text-slate-300">{submission.student}</p>
+                        <p className="mt-2 text-slate-100">{submission.text}</p>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            onClick={() => handleApprovePending(idx)}
+                            className="flex-1 rounded-lg bg-teal-500 py-1 text-xs font-semibold text-white hover:bg-teal-600"
+                          >
+                            Approve & Add
+                          </button>
+                          <button
+                            onClick={() => handleDismissPending(idx)}
+                            className="flex-1 rounded-lg border border-white/20 py-1 text-xs text-white hover:border-red-400 hover:text-red-200"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -634,6 +757,14 @@ export default function LayupList() {
                       <div className="rounded-2xl bg-slate-900 px-3 py-1 text-sm font-semibold text-green-300">
                         {professor.gpa.toFixed(3)}
                       </div>
+                      {isAuthed && (
+                        <button
+                          onClick={() => handleDeleteProfessor(professor.name)}
+                          className="rounded-lg border border-white/20 px-2 py-1 text-[11px] text-red-300 hover:border-red-400 hover:text-white"
+                        >
+                          Delete Profile
+                        </button>
+                      )}
                     </div>
 
                     <div>
