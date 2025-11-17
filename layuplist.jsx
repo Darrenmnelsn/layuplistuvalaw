@@ -64,41 +64,73 @@ const professors = [
     name: "John C Harrison",
     courses: ["Federal Courts"],
     gpa: 3.65,
+    reviews: [
+      { student: "3L Litigator", text: "Crystal-clear explanations of Article III doctrine. Cold calls are tough but fair." },
+      { student: "2L Transfer", text: "Heavy reading load, yet curve-friendly. Great for clerkship prep." },
+    ],
   },
   {
     name: "Aditya Bamzai",
     courses: ["Civil Procedure", "Administrative Law", "Computer Crime"],
     gpa: 3.53,
+    reviews: [
+      { student: "1L Section C", text: "Uses hypotheticals nonstop—perfect for exam practice." },
+      { student: "Cyber Clinic RA", text: "Admin + tech overlap makes his office hours invaluable." },
+    ],
   },
   {
     name: "Barbara Ellen Armacost",
     courses: ["Torts", "Con Law II: Religious Liberty"],
     gpa: 3.495,
+    reviews: [
+      { student: "1L Evening", text: "Warm teaching style and detailed rubrics kept everyone relaxed." },
+      { student: "Rel Liberty Seminar", text: "Expect reflective essays alongside doctrinal analysis." },
+    ],
   },
   {
     name: "Paul Gregory Mitchell",
     courses: ["Evidence", "Professional Responsibility"],
     gpa: 3.505,
+    reviews: [
+      { student: "Trial Advocacy Member", text: "Practical evidence hypos mirror UVA mock trial problems." },
+      { student: "Ethics TA", text: "Professional responsibility lectures are concise and practical." },
+    ],
   },
   {
     name: "Michael Gilbert",
     courses: ["Regulation of Political Process"],
     gpa: 3.52,
+    reviews: [
+      { student: "Election Law Society", text: "Policy-focused discussions; bring current-event references." },
+      { student: "Journal Note Writer", text: "Provides thoughtful feedback on research topics." },
+    ],
   },
   {
     name: "Benjamin Ryan Sachs",
     courses: ["Professional Responsibility"],
     gpa: 3.51,
+    reviews: [
+      { student: "Ethics Section", text: "Stories from practice keep dry material engaging." },
+      { student: "Public Service Fellow", text: "Accommodating to externship schedules." },
+    ],
   },
   {
     name: "Josh Bowers",
     courses: ["Criminal Procedure Survey"],
     gpa: 3.54,
+    reviews: [
+      { student: "Public Defender Intern", text: "Great framing of practical defense strategies." },
+      { student: "2L Spring", text: "Calls on everyone eventually—brief the cases well." },
+    ],
   },
   {
     name: "Darryl Keith Brown",
     courses: ["Criminal Law", "Criminal Adjudication"],
     gpa: 3.5,
+    reviews: [
+      { student: "1L Prosecutor", text: "Balanced between theory and policy critiques." },
+      { student: "JAG Scholar", text: "Exam focuses on applying doctrine, not rote recall." },
+    ],
   },
 ];
 
@@ -117,22 +149,116 @@ const MAX_CREDITS = Math.max(
   ...schedule.map((semester) => semester.courses.reduce((sum, course) => sum + course.credits, 0)),
 );
 
-const formatCourseList = (courses) => (courses.length > 1 ? courses.join(", ") : courses[0]);
-
 export default function LayupList() {
-  const professorsByGpa = [...professors].sort((a, b) => b.gpa - a.gpa);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const professorsByGpa = React.useMemo(() => [...professors].sort((a, b) => b.gpa - a.gpa), []);
+  const filteredProfessors = React.useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return professorsByGpa;
+    return professorsByGpa.filter((professor) => {
+      const inName = professor.name.toLowerCase().includes(query);
+      const inCourse = professor.courses.some((course) => course.toLowerCase().includes(query));
+      return inName || inCourse;
+    });
+  }, [professorsByGpa, searchTerm]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-10">
+      <div className="mx-auto max-w-5xl space-y-10">
+        <header className="text-center">
           <p className="text-sm tracking-wide uppercase text-orange-400">LayupList</p>
-          <h1 className="text-4xl font-bold text-white">UVA Law LayupList</h1>
-          <p className="mt-3 max-w-3xl text-base text-slate-300">
-            Track UVA Law&apos;s recommended schedule and scout the professors with the most generous median GPAs.
-            Each course block scales by credit load and each faculty card highlights course coverage plus average GPAs.
+          <h1 className="mt-2 text-4xl font-bold text-white sm:text-5xl">UVA Law LayupList</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300">
+            Search professors, scan their median GPAs, and read UVA student reviews before locking in your class list.
           </p>
+          <div className="mt-8">
+            <label htmlFor="prof-search" className="sr-only">
+              Search professors or courses
+            </label>
+            <div className="relative mx-auto max-w-2xl">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+              <input
+                id="prof-search"
+                type="search"
+                placeholder="Search professors or courses…"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-white/5 px-12 py-4 text-base text-white placeholder:text-slate-500 focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+              />
+            </div>
+            <p className="mt-3 text-sm text-slate-400">
+              Showing {filteredProfessors.length} of {professorsByGpa.length} professors
+            </p>
+          </div>
         </header>
+
+        <section className="rounded-3xl border border-white/10 bg-slate-900/40 p-6 shadow-xl shadow-black/30">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-orange-300">Professor Profiles</p>
+              <h2 className="text-2xl font-semibold text-white">Median Classes & Student Reviews</h2>
+              <p className="text-sm text-slate-300">
+                Every profile is currently hard-coded—perfect for MVP testing and future data feeds.
+              </p>
+            </div>
+            <div className="rounded-full bg-slate-800 px-4 py-2 text-center text-xs text-slate-200">
+              {filteredProfessors.length === professorsByGpa.length ? "Explore them all" : "Filtered view"}
+            </div>
+          </div>
+
+          {filteredProfessors.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-sm text-slate-300">
+              No professors match that search yet. Try another name, course, or clear the search.
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredProfessors.map((professor, idx) => (
+                <article
+                  key={professor.name}
+                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-md shadow-black/20"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-orange-200">Rank #{idx + 1}</p>
+                      <h3 className="text-lg font-semibold text-white">{professor.name}</h3>
+                      <p className="text-xs text-slate-400">
+                        Median GPA {professor.gpa.toFixed(3)} · {professor.courses.length} classes tracked
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-900 px-3 py-1 text-sm font-semibold text-green-300">
+                      {professor.gpa.toFixed(3)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Median Classes</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {professor.courses.map((course) => (
+                        <span
+                          key={`${professor.name}-${course}`}
+                          className="rounded-full bg-slate-950/40 px-3 py-1 text-xs text-slate-100"
+                        >
+                          {course}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Student Reviews</p>
+                    <div className="mt-2 space-y-2 text-sm text-slate-100">
+                      {professor.reviews.map((review, reviewIdx) => (
+                        <p key={`${professor.name}-review-${reviewIdx}`}>
+                          <span className="font-semibold text-orange-200">{review.student}:</span> {review.text}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="space-y-6 rounded-3xl bg-white/5 p-6 shadow-xl shadow-black/40 backdrop-blur">
           {schedule.map((semester) => {
@@ -211,44 +337,6 @@ export default function LayupList() {
             ))}
           </div>
         </footer>
-
-        <section className="mt-10 rounded-3xl border border-orange-300/30 bg-slate-900/40 p-6 shadow-lg shadow-black/30">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-orange-300">Faculty Intel</p>
-              <h2 className="text-2xl font-semibold text-white">Highest Median GPA Professors</h2>
-              <p className="text-sm text-slate-300">
-                Sorted by reported UVA median GPAs. Use this as a layup list when planning electives or clinics.
-              </p>
-            </div>
-            <div className="rounded-full bg-slate-800 px-4 py-2 text-center text-xs text-slate-200">
-              {professorsByGpa.length} professors tracked
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {professorsByGpa.map((professor, idx) => (
-              <article
-                key={professor.name}
-                className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-md shadow-black/20"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-orange-200">Rank #{idx + 1}</p>
-                    <h3 className="text-lg font-semibold text-white">{professor.name}</h3>
-                  </div>
-                  <div className="rounded-2xl bg-slate-900 px-3 py-1 text-sm font-semibold text-green-300">
-                    {professor.gpa.toFixed(3)}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Courses</p>
-                  <p className="text-sm text-slate-100">{formatCourseList(professor.courses)}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
       </div>
     </div>
   );
