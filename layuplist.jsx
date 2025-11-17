@@ -59,7 +59,11 @@ const schedule = [
   },
 ];
 
-const professors = [
+const ADMIN_ACCOUNTS = [{ username: "bte4wz", password: "bte4wz2028" }];
+const PROFESSOR_STORAGE_KEY = "layuplist:professors";
+const AUTH_STORAGE_KEY = "layuplist:isAuthed";
+
+const defaultProfessors = [
   {
     name: "John C Harrison",
     courses: ["Federal Courts"],
@@ -151,7 +155,32 @@ const MAX_CREDITS = Math.max(
 
 export default function LayupList() {
   const [searchTerm, setSearchTerm] = React.useState("");
-  const professorsByGpa = React.useMemo(() => [...professors].sort((a, b) => b.gpa - a.gpa), []);
+  const [professorData, setProfessorData] = React.useState(() => {
+    const stored = localStorage.getItem(PROFESSOR_STORAGE_KEY);
+    try {
+      return stored ? JSON.parse(stored) : defaultProfessors;
+    } catch (error) {
+      console.warn("Failed to parse stored professors", error);
+      return defaultProfessors;
+    }
+  });
+  const [isAuthed, setIsAuthed] = React.useState(() => localStorage.getItem(AUTH_STORAGE_KEY) === "true");
+  const [loginForm, setLoginForm] = React.useState({ username: "", password: "", error: "" });
+  const [newProfessor, setNewProfessor] = React.useState({
+    name: "",
+    courses: "",
+    gpa: "",
+    reviewer: "",
+    review: "",
+  });
+  const [newReview, setNewReview] = React.useState({ professorName: "", student: "", text: "" });
+  const [formMessage, setFormMessage] = React.useState("");
+
+  React.useEffect(() => {
+    localStorage.setItem(PROFESSOR_STORAGE_KEY, JSON.stringify(professorData));
+  }, [professorData]);
+
+  const professorsByGpa = React.useMemo(() => [...professorData].sort((a, b) => b.gpa - a.gpa), [professorData]);
   const filteredProfessors = React.useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return professorsByGpa;
@@ -161,6 +190,96 @@ export default function LayupList() {
       return inName || inCourse;
     });
   }, [professorsByGpa, searchTerm]);
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    const { username, password } = loginForm;
+    const valid = ADMIN_ACCOUNTS.some((account) => account.username === username && account.password === password);
+    if (valid) {
+      setIsAuthed(true);
+      localStorage.setItem(AUTH_STORAGE_KEY, "true");
+      setLoginForm({ username: "", password: "", error: "" });
+    } else {
+      setLoginForm((prev) => ({ ...prev, error: "Invalid credentials. Please try again." }));
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthed(false);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  };
+
+  const handleNewProfessorChange = (event) => {
+    const { name, value } = event.target;
+    setNewProfessor((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNewReviewChange = (event) => {
+    const { name, value } = event.target;
+    setNewReview((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddProfessor = (event) => {
+    event.preventDefault();
+    setFormMessage("");
+    if (!newProfessor.name || !newProfessor.courses || !newProfessor.gpa || !newProfessor.reviewer || !newProfessor.review) {
+      setFormMessage("Please fill in every field before adding a professor.");
+      return;
+    }
+
+    const parsedGpa = parseFloat(newProfessor.gpa);
+    if (Number.isNaN(parsedGpa)) {
+      setFormMessage("GPA must be a number.");
+      return;
+    }
+
+    const courses = newProfessor.courses.split(",").map((course) => course.trim()).filter(Boolean);
+    if (courses.length === 0) {
+      setFormMessage("Include at least one course (comma-separated).");
+      return;
+    }
+
+    const alreadyExists = professorData.some((professor) => professor.name.toLowerCase() === newProfessor.name.toLowerCase());
+    if (alreadyExists) {
+      setFormMessage("That professor already exists. Add a review instead.");
+      return;
+    }
+
+    const newProfile = {
+      name: newProfessor.name.trim(),
+      courses,
+      gpa: parsedGpa,
+      reviews: [{ student: newProfessor.reviewer.trim(), text: newProfessor.review.trim() }],
+    };
+
+    setProfessorData((prev) => [...prev, newProfile]);
+    setNewProfessor({ name: "", courses: "", gpa: "", reviewer: "", review: "" });
+    setFormMessage("Professor added successfully.");
+  };
+
+  const handleAddReview = (event) => {
+    event.preventDefault();
+    setFormMessage("");
+    const { professorName, student, text } = newReview;
+    if (!professorName || !student || !text) {
+      setFormMessage("Provide the professor, student name, and review text.");
+      return;
+    }
+
+    setProfessorData((prev) =>
+      prev.map((professor) => {
+        if (professor.name === professorName) {
+          return {
+            ...professor,
+            reviews: [...professor.reviews, { student: student.trim(), text: text.trim() }],
+          };
+        }
+        return professor;
+      }),
+    );
+    setNewReview({ professorName: "", student: "", text: "" });
+    setFormMessage("Review added successfully.");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100 px-6 py-12">
@@ -191,6 +310,159 @@ export default function LayupList() {
             </p>
           </div>
         </header>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/30">
+          {isAuthed ? (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-orange-300">Admin Mode</p>
+                  <h2 className="text-2xl font-semibold text-white">Add Professors & Reviews</h2>
+                  <p className="text-sm text-slate-300">Add-only access keeps existing data safe.</p>
+                </div>
+                <button
+                  className="rounded-xl border border-white/20 px-4 py-2 text-xs text-slate-200 hover:border-orange-300 hover:text-white"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </button>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <form onSubmit={handleAddProfessor} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+                  <h3 className="text-lg font-semibold text-white">Add Professor</h3>
+                  <input
+                    type="text"
+                    name="name"
+                    value={newProfessor.name}
+                    onChange={handleNewProfessorChange}
+                    placeholder="Professor name"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="courses"
+                    value={newProfessor.courses}
+                    onChange={handleNewProfessorChange}
+                    placeholder="Courses (comma-separated)"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <input
+                    type="number"
+                    name="gpa"
+                    step="0.001"
+                    value={newProfessor.gpa}
+                    onChange={handleNewProfessorChange}
+                    placeholder="Median GPA"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="reviewer"
+                    value={newProfessor.reviewer}
+                    onChange={handleNewProfessorChange}
+                    placeholder="First review – student name"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <textarea
+                    name="review"
+                    value={newProfessor.review}
+                    onChange={handleNewProfessorChange}
+                    placeholder="First review text"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    rows="3"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-orange-500 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+                  >
+                    Add Professor
+                  </button>
+                </form>
+
+                <form onSubmit={handleAddReview} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+                  <h3 className="text-lg font-semibold text-white">Add Review</h3>
+                  <select
+                    name="professorName"
+                    value={newReview.professorName}
+                    onChange={handleNewReviewChange}
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white"
+                    required
+                  >
+                    <option value="">Select professor…</option>
+                    {professorData.map((professor) => (
+                      <option key={`review-${professor.name}`} value={professor.name}>
+                        {professor.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    name="student"
+                    value={newReview.student}
+                    onChange={handleNewReviewChange}
+                    placeholder="Student name"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <textarea
+                    name="text"
+                    value={newReview.text}
+                    onChange={handleNewReviewChange}
+                    placeholder="Review text"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                    rows="4"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-teal-500 py-2 text-sm font-semibold text-white transition hover:bg-teal-600"
+                  >
+                    Add Review
+                  </button>
+                </form>
+              </div>
+
+              {formMessage && <p className="text-sm text-orange-300">{formMessage}</p>}
+            </div>
+          ) : (
+            <form
+              onSubmit={handleLogin}
+              className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/40 p-6 text-center shadow-xl shadow-black/30"
+            >
+              <p className="text-xs uppercase tracking-wide text-orange-300">Admin Access</p>
+              <h2 className="text-2xl font-semibold text-white">Log in to add profiles or reviews</h2>
+              <input
+                type="text"
+                placeholder="Username"
+                value={loginForm.username}
+                onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginForm.password}
+                onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                required
+              />
+              {loginForm.error && <p className="text-sm text-red-400">{loginForm.error}</p>}
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-orange-500 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+              >
+                Log In
+              </button>
+            </form>
+          )}
+        </section>
 
         <section className="rounded-3xl border border-white/10 bg-slate-900/40 p-6 shadow-xl shadow-black/30">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -259,84 +531,6 @@ export default function LayupList() {
             </div>
           )}
         </section>
-
-        <section className="space-y-6 rounded-3xl bg-white/5 p-6 shadow-xl shadow-black/40 backdrop-blur">
-          {schedule.map((semester) => {
-            const totalCredits = semester.courses.reduce((sum, course) => sum + course.credits, 0);
-            const remainingWidth = Math.max(0, ((MAX_CREDITS - totalCredits) / MAX_CREDITS) * 100);
-
-            return (
-              <article
-                key={semester.semester}
-                className="rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:border-orange-300/60"
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="text-xs tracking-wide text-orange-300 uppercase">Semester</p>
-                    <h2 className="text-xl font-semibold text-white">{semester.semester}</h2>
-                  </div>
-                  <div className="text-sm text-slate-300">
-                    Total Credits:{" "}
-                    <span className="font-semibold text-white">
-                      {totalCredits}
-                      {totalCredits < MAX_CREDITS ? ` / ${MAX_CREDITS}` : ""}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex h-28 items-stretch rounded-xl border border-white/5 bg-slate-950/30">
-                  {semester.courses.map((course) => {
-                    const widthPercentage = (course.credits / MAX_CREDITS) * 100;
-                    const color = gpaToColor(course.gpa);
-                    const useLightText = course.gpa >= 3.55;
-
-                    return (
-                      <div
-                        key={`${semester.semester}-${course.name}`}
-                        className="flex flex-1 flex-col justify-center border-r border-white/10 px-2 text-center last:border-r-0"
-                        style={{ width: `${widthPercentage}%`, backgroundColor: color }}
-                        title={`${course.name}: ${course.credits} credits • Median GPA ${course.gpa.toFixed(2)}`}
-                      >
-                        <p className={`text-sm font-semibold ${useLightText ? "text-white" : "text-black"}`}>
-                          {course.name}
-                        </p>
-                        <p className={`text-xs ${useLightText ? "text-white/80" : "text-black/80"}`}>
-                          {course.credits} credits
-                        </p>
-                        <p className={`text-xs font-semibold ${useLightText ? "text-white" : "text-black"}`}>
-                          GPA ~ {course.gpa.toFixed(2)}
-                        </p>
-                      </div>
-                    );
-                  })}
-                  {remainingWidth > 0 && (
-                    <div
-                      className="hidden h-full items-center justify-center text-xs text-slate-500 md:flex"
-                      style={{ width: `${remainingWidth}%` }}
-                    >
-                      Free Electives / Clinics
-                    </div>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </section>
-
-        <footer className="mt-10 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-white">Median GPA Legend</p>
-            <p className="text-xs text-slate-300">Color-coding mirrors the Matplotlib heatmap.</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {GPA_BUCKETS.map((bucket) => (
-              <div key={bucket.label} className="flex items-center gap-2 rounded-full bg-slate-900/60 px-3 py-1">
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: bucket.color }} />
-                <span className="text-xs text-slate-100">{bucket.label}</span>
-              </div>
-            ))}
-          </div>
-        </footer>
       </div>
     </div>
   );
