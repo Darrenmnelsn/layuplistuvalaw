@@ -183,7 +183,7 @@ export default function LayupList() {
                 placeholder="Search professors or courses…"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-12 py-4 text-base text-white placeholder:text-slate-500 focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+                className="w-full rounded-2xl border border-white/10 bg-white/5 px-12 py-4 text-base text-white placeholder:text-slate-400 focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
               />
             </div>
             <p className="mt-3 text-sm text-slate-400">
@@ -198,7 +198,7 @@ export default function LayupList() {
               <p className="text-xs uppercase tracking-wide text-orange-300">Professor Profiles</p>
               <h2 className="text-2xl font-semibold text-white">Median Classes & Student Reviews</h2>
               <p className="text-sm text-slate-300">
-                Every profile is currently hard-coded—perfect for MVP testing and future data feeds.
+                Every profile is hard-wired for now—perfect for validating the concept before you plug in data feeds.
               </p>
             </div>
             <div className="rounded-full bg-slate-800 px-4 py-2 text-center text-xs text-slate-200">
@@ -208,7 +208,7 @@ export default function LayupList() {
 
           {filteredProfessors.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-sm text-slate-300">
-              No professors match that search yet. Try another name, course, or clear the search.
+              No professors match that search yet. Try another name, course, or clear the query.
             </p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
