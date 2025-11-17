@@ -285,12 +285,58 @@ export default function LayupList() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100 px-6 py-12">
       <div className="mx-auto max-w-5xl space-y-10">
         <header className="text-center">
-          <p className="text-sm tracking-wide uppercase text-orange-400">LayupList</p>
-          <h1 className="mt-2 text-4xl font-bold text-white sm:text-5xl">UVA Law LayupList</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-left">
+              <p className="text-sm tracking-wide uppercase text-orange-400">LayupList</p>
+              <h1 className="text-3xl font-bold text-white sm:text-4xl">UVA Law LayupList</h1>
+            </div>
+            <div className="text-left">
+              {isAuthed ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
+                  <p className="font-semibold text-white">Admin mode</p>
+                  <button
+                    className="mt-1 w-full rounded-lg border border-white/20 px-2 py-1 text-[11px] text-slate-100 hover:border-orange-300 hover:text-white"
+                    onClick={handleLogout}
+                  >
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleLogin} className="space-y-1 rounded-xl border border-white/10 bg-white/5 p-3 text-left text-xs text-slate-200">
+                  <p className="font-semibold text-white">Admin login</p>
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={loginForm.username}
+                    onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={loginForm.password}
+                    onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-2 py-1 text-xs text-white placeholder:text-slate-500"
+                    required
+                  />
+                  {loginForm.error && <p className="text-[11px] text-red-400">{loginForm.error}</p>}
+                  <button
+                    type="submit"
+                    className="w-full rounded-lg bg-orange-500 py-1 text-xs font-semibold text-white transition hover:bg-orange-600"
+                  >
+                    Log in
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+
+          <p className="mx-auto mt-2 max-w-2xl text-base text-slate-300">
             Search professors, scan their median GPAs, and read UVA student reviews before locking in your class list.
           </p>
-          <div className="mt-8">
+
+          <div className="mt-6">
             <label htmlFor="prof-search" className="sr-only">
               Search professors or courses
             </label>
@@ -306,7 +352,9 @@ export default function LayupList() {
               />
             </div>
             <p className="mt-3 text-sm text-slate-400">
-              Showing {filteredProfessors.length} of {professorsByGpa.length} professors
+              {searchTerm.trim()
+                ? `Showing ${filteredProfessors.length} result${filteredProfessors.length === 1 ? "" : "s"}`
+                : `Enter a professor or course to display profiles`}
             </p>
           </div>
         </header>
@@ -464,73 +512,72 @@ export default function LayupList() {
           )}
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-slate-900/40 p-6 shadow-xl shadow-black/30">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-orange-300">Professor Profiles</p>
-              <h2 className="text-2xl font-semibold text-white">Median Classes & Student Reviews</h2>
-              <p className="text-sm text-slate-300">
-                Every profile is hard-wired for now—perfect for validating the concept before you plug in data feeds.
+        {searchTerm.trim() && (
+          <section className="rounded-3xl border border-white/10 bg-slate-900/40 p-6 shadow-xl shadow-black/30">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-orange-300">Professor Profiles</p>
+                <h2 className="text-2xl font-semibold text-white">Median Classes & Student Reviews</h2>
+              </div>
+              <div className="rounded-full bg-slate-800 px-4 py-2 text-center text-xs text-slate-200">
+                Showing {filteredProfessors.length} profiles
+              </div>
+            </div>
+
+            {filteredProfessors.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-sm text-slate-300">
+                No professors match that search yet. Try another name or course.
               </p>
-            </div>
-            <div className="rounded-full bg-slate-800 px-4 py-2 text-center text-xs text-slate-200">
-              {filteredProfessors.length === professorsByGpa.length ? "Explore them all" : "Filtered view"}
-            </div>
-          </div>
-
-          {filteredProfessors.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-sm text-slate-300">
-              No professors match that search yet. Try another name, course, or clear the query.
-            </p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredProfessors.map((professor, idx) => (
-                <article
-                  key={professor.name}
-                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-md shadow-black/20"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-orange-200">Rank #{idx + 1}</p>
-                      <h3 className="text-lg font-semibold text-white">{professor.name}</h3>
-                      <p className="text-xs text-slate-400">
-                        Median GPA {professor.gpa.toFixed(3)} · {professor.courses.length} classes tracked
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-900 px-3 py-1 text-sm font-semibold text-green-300">
-                      {professor.gpa.toFixed(3)}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Median Classes</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {professor.courses.map((course) => (
-                        <span
-                          key={`${professor.name}-${course}`}
-                          className="rounded-full bg-slate-950/40 px-3 py-1 text-xs text-slate-100"
-                        >
-                          {course}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Student Reviews</p>
-                    <div className="mt-2 space-y-2 text-sm text-slate-100">
-                      {professor.reviews.map((review, reviewIdx) => (
-                        <p key={`${professor.name}-review-${reviewIdx}`}>
-                          <span className="font-semibold text-orange-200">{review.student}:</span> {review.text}
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredProfessors.map((professor, idx) => (
+                  <article
+                    key={professor.name}
+                    className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-md shadow-black/20"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-orange-200">Rank #{idx + 1}</p>
+                        <h3 className="text-lg font-semibold text-white">{professor.name}</h3>
+                        <p className="text-xs text-slate-400">
+                          Median GPA {professor.gpa.toFixed(3)} · {professor.courses.length} classes tracked
                         </p>
-                      ))}
+                      </div>
+                      <div className="rounded-2xl bg-slate-900 px-3 py-1 text-sm font-semibold text-green-300">
+                        {professor.gpa.toFixed(3)}
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-slate-400">Median Classes</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {professor.courses.map((course) => (
+                          <span
+                            key={`${professor.name}-${course}`}
+                            className="rounded-full bg-slate-950/40 px-3 py-1 text-xs text-slate-100"
+                          >
+                            {course}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-400">Student Reviews</p>
+                      <div className="mt-2 space-y-2 text-sm text-slate-100">
+                        {professor.reviews.map((review, reviewIdx) => (
+                          <p key={`${professor.name}-review-${reviewIdx}`}>
+                            <span className="font-semibold text-orange-200">{review.student}:</span> {review.text}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

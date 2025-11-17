@@ -325,20 +325,20 @@
 
               <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/40">
                 {isAuthed ? (
-                  <div className="space-y-6">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-orange-300">Admin Mode</p>
-                        <h2 className="text-2xl font-semibold text-white">Add Professors & Reviews</h2>
-                        <p className="text-sm text-slate-300">Add-only access keeps existing data safe.</p>
-                      </div>
-                      <button
-                        className="rounded-xl border border-white/20 px-4 py-2 text-xs text-slate-200 hover:border-orange-300 hover:text-white"
-                        onClick={handleLogout}
-                      >
-                        Log out
-                      </button>
-                    </div>
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-orange-300">Admin Mode</p>
+                  <h2 className="text-2xl font-semibold text-white">Add Professors & Reviews</h2>
+                  <p className="text-sm text-slate-300">Add-only access keeps existing data safe.</p>
+                </div>
+                <button
+                  className="rounded-xl border border-white/20 px-4 py-2 text-xs text-slate-200 hover:border-orange-300 hover:text-white"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </button>
+              </div>
 
                     <div className="grid gap-6 md:grid-cols-2">
                       <form onSubmit={handleAddProfessor} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
