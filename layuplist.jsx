@@ -65,75 +65,165 @@ const AUTH_STORAGE_KEY = "layuplist:isAuthed";
 
 const defaultProfessors = [
   {
-    name: "John C Harrison",
-    courses: ["Federal Courts"],
-    gpa: 3.65,
+    name: "Kenneth S. Abraham",
+    courses: ["Torts (LAW 6007)", "1L Torts"],
+    gpa: 3.45,
     reviews: [
-      { student: "3L Litigator", text: "Crystal-clear explanations of Article III doctrine. Cold calls are tough but fair." },
-      { student: "2L Transfer", text: "Heavy reading load, yet curve-friendly. Great for clerkship prep." },
+      { student: "1L Fall 2023", text: "Legendary torts scholar; lectures are clear but his issue-spotter exams bite." },
+      { student: "Forum Roundup", text: "Curve feels moderate—prep matters more than outline swapping." },
+    ],
+  },
+  {
+    name: "Alice Abrokwa",
+    courses: ["Civil Procedure", "Disability Law"],
+    gpa: 3.4,
+    reviews: [
+      { student: "1L Section FG", text: "Energetic classes with lots of cold calls but incredibly fair feedback." },
+      { student: "Reddit Tip", text: "Rigorous yet supportive—you leave Civ Pro actually understanding Erie." },
+    ],
+  },
+  {
+    name: "Payvand Ahdout",
+    courses: ["Federal Courts", "Separation of Powers Seminar"],
+    gpa: 3.42,
+    reviews: [
+      { student: "Spring 2025", text: "Federal Courts is brutal if you take it early—reading load is no joke." },
+      { student: "3L Clerkship Prep", text: "Phenomenal scholar; come ready for constitutional nuance." },
+    ],
+  },
+  {
+    name: "Lori Alvino McGill",
+    courses: ["Legal Writing", "Lawyering Skills"],
+    gpa: 3.55,
+    reviews: [
+      { student: "1L Writing Section", text: "Extremely hands-on with memos and briefs; comments are gold." },
+      { student: "Clinic Alum", text: "Professionalism focus helps during summer gigs." },
+    ],
+  },
+  {
+    name: "Temi Anderson",
+    courses: ["Legal Research & Writing II"],
+    gpa: 3.55,
+    reviews: [
+      { student: "Writing Partner", text: "Keeps LRW fast-paced but checks in constantly." },
+      { student: "1L Feedback", text: "Detailed edits make your writing tighten up quickly." },
+    ],
+  },
+  {
+    name: "Nina-Alice Antony",
+    courses: ["Legal Analysis & Communication"],
+    gpa: 3.5,
+    reviews: [
+      { student: "LAC Section", text: "Supportive writing coach—great at demystifying UVA’s memo format." },
+      { student: "Peer Mentor", text: "Expect weekly check-ins and quick turnaround on drafts." },
+    ],
+  },
+  {
+    name: "Barbara E. Armacost",
+    courses: ["Torts", "Pretrial Litigation"],
+    gpa: 3.45,
+    reviews: [
+      { student: "1L 2023", text: "Caring but demanding—her torts hypotheticals get everyone talking." },
+      { student: "Clinic Student", text: "Approachable outside class and generous with practice exams." },
+    ],
+  },
+  {
+    name: "Anthony A. Arsali",
+    courses: ["Legal Writing I", "Legal Writing II"],
+    gpa: 3.6,
+    reviews: [
+      { student: "Writing Section", text: "Promotes practical drafting habits drawn from practice." },
+      { student: "Partner Feedback", text: "Chill but thorough—great for nervous 1Ls." },
+    ],
+  },
+  {
+    name: "Scott Ballenger",
+    courses: ["Appellate Litigation Clinic"],
+    gpa: 3.5,
+    reviews: [
+      { student: "Clinic Alum", text: "Clinic is the real deal—Ballenger sharpens briefs line by line." },
+      { student: "Moot Court Captain", text: "Expect hands-on feedback and partnerships with real clients." },
     ],
   },
   {
     name: "Aditya Bamzai",
-    courses: ["Civil Procedure", "Administrative Law", "Computer Crime"],
-    gpa: 3.53,
+    courses: ["Administrative Law", "Constitutional Law"],
+    gpa: 3.4,
     reviews: [
-      { student: "1L Section C", text: "Uses hypotheticals nonstop—perfect for exam practice." },
-      { student: "Cyber Clinic RA", text: "Admin + tech overlap makes his office hours invaluable." },
-    ],
-  },
-  {
-    name: "Barbara Ellen Armacost",
-    courses: ["Torts", "Con Law II: Religious Liberty"],
-    gpa: 3.495,
-    reviews: [
-      { student: "1L Evening", text: "Warm teaching style and detailed rubrics kept everyone relaxed." },
-      { student: "Rel Liberty Seminar", text: "Expect reflective essays alongside doctrinal analysis." },
-    ],
-  },
-  {
-    name: "Paul Gregory Mitchell",
-    courses: ["Evidence", "Professional Responsibility"],
-    gpa: 3.505,
-    reviews: [
-      { student: "Trial Advocacy Member", text: "Practical evidence hypos mirror UVA mock trial problems." },
-      { student: "Ethics TA", text: "Professional responsibility lectures are concise and practical." },
-    ],
-  },
-  {
-    name: "Michael Gilbert",
-    courses: ["Regulation of Political Process"],
-    gpa: 3.52,
-    reviews: [
-      { student: "Election Law Society", text: "Policy-focused discussions; bring current-event references." },
-      { student: "Journal Note Writer", text: "Provides thoughtful feedback on research topics." },
-    ],
-  },
-  {
-    name: "Benjamin Ryan Sachs",
-    courses: ["Professional Responsibility"],
-    gpa: 3.51,
-    reviews: [
-      { student: "Ethics Section", text: "Stories from practice keep dry material engaging." },
-      { student: "Public Service Fellow", text: "Accommodating to externship schedules." },
+      { student: "Admin Law 2L", text: "Hypotheticals nonstop—fantastic prep for finals." },
+      { student: "Small Group", text: "Explains separation of powers like a podcast host." },
     ],
   },
   {
     name: "Josh Bowers",
-    courses: ["Criminal Procedure Survey"],
-    gpa: 3.54,
+    courses: ["Criminal Law", "Criminal Procedure"],
+    gpa: 3.45,
     reviews: [
-      { student: "Public Defender Intern", text: "Great framing of practical defense strategies." },
-      { student: "2L Spring", text: "Calls on everyone eventually—brief the cases well." },
+      { student: "1L Spring", text: "Creative, Socratic, and brutally honest about doctrine." },
+      { student: "Public Defender Track", text: "Demanding but inspiring—classes fill instantly." },
     ],
   },
   {
-    name: "Darryl Keith Brown",
-    courses: ["Criminal Law", "Criminal Adjudication"],
-    gpa: 3.5,
+    name: "Darryl K. Brown",
+    courses: ["Criminal Law", "Evidence"],
+    gpa: 3.45,
     reviews: [
-      { student: "1L Prosecutor", text: "Balanced between theory and policy critiques." },
-      { student: "JAG Scholar", text: "Exam focuses on applying doctrine, not rote recall." },
+      { student: "Fall 2024", text: "Clear explanations of doctrine + policy; fair cold calls." },
+      { student: "JAG Scholar", text: "Balances theory and real-world perspectives brilliantly." },
+    ],
+  },
+  {
+    name: "Jay Butler",
+    courses: ["Contracts", "Conflict of Laws", "Trial Advocacy"],
+    gpa: 3.43,
+    reviews: [
+      { student: "Contracts Section J", text: "Engaging 1L professor—organized slides and humor." },
+      { student: "Trial Ad Alum", text: "Practical advocacy drills in every class." },
+    ],
+  },
+  {
+    name: "Naomi R. Cahn",
+    courses: ["Family Law", "Gender & the Law"],
+    gpa: 3.4,
+    reviews: [
+      { student: "Family Law 2L", text: "Brings decades of scholarship into each discussion." },
+      { student: "Clinic Partner", text: "Supportive and deeply knowledgeable about caregiving policy." },
+    ],
+  },
+  {
+    name: "Danielle K. Citron",
+    courses: ["Cybersecurity Law", "Privacy Law"],
+    gpa: 3.42,
+    reviews: [
+      { student: "Cybersecurity Law", text: "Cutting-edge materials; expect rigorous reading assignments." },
+      { student: "Tech Policy Fellow", text: "One of UVA’s stars—she connects doctrine to real cases." },
+    ],
+  },
+  {
+    name: "George M. Cohen",
+    courses: ["Contracts", "Business Associations"],
+    gpa: 3.4,
+    reviews: [
+      { student: "1L Contracts A", text: "Kind, methodical, and committed to making the UCC approachable." },
+      { student: "BA Elective", text: "Great at connecting doctrine to practice problems." },
+    ],
+  },
+  {
+    name: "Michael G. Collins",
+    courses: ["Conflict of Laws", "International Law"],
+    gpa: 3.4,
+    reviews: [
+      { student: "Conflict of Laws", text: "Dense material but Collins keeps it narrative-driven." },
+      { student: "3L Elective", text: "Expect theoretical depth plus old-school UVA charm." },
+    ],
+  },
+  {
+    name: "Ashley S. Deeks",
+    courses: ["National Security Law", "Cybersecurity Law"],
+    gpa: 3.4,
+    reviews: [
+      { student: "NatSec 3L", text: "Government perspective is invaluable; classes full of current events." },
+      { student: "Cyber Law Seminar", text: "Reading-intensive but worth it for policy-minded students." },
     ],
   },
 ];
