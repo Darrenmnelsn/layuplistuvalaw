@@ -373,6 +373,23 @@ export default function LayupList() {
     setFormMessage("Review added successfully.");
   };
 
+  const handleDeleteProfessor = (name) => {
+    if (!window.confirm(`Remove ${name} from LayupList?`)) return;
+    setProfessorData((prev) => prev.filter((professor) => professor.name !== name));
+  };
+
+  const handleDeleteReview = (professorName, reviewIndex) => {
+    setProfessorData((prev) =>
+      prev.map((professor) => {
+        if (professor.name === professorName) {
+          const nextReviews = professor.reviews.filter((_, idx) => idx !== reviewIndex);
+          return { ...professor, reviews: nextReviews };
+        }
+        return professor;
+      }),
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100 px-6 py-12">
       <div className="mx-auto max-w-5xl space-y-10">
@@ -388,7 +405,15 @@ export default function LayupList() {
                   >
                     Log out
                   </button>
-                </div>
+                    {isAuthed && (
+                      <button
+                        onClick={() => handleDeleteProfessor(professor.name)}
+                        className="rounded-lg border border-white/20 px-2 py-1 text-[11px] text-slate-100 hover:border-red-400 hover:text-white"
+                      >
+                        Delete Profile
+                      </button>
+                    )}
+                  </div>
               ) : (
                 <div>
                   <button
@@ -629,9 +654,19 @@ export default function LayupList() {
                       <p className="text-xs uppercase tracking-wide text-slate-400">Student Reviews</p>
                       <div className="mt-2 space-y-2 text-sm text-slate-100">
                         {professor.reviews.map((review, reviewIdx) => (
-                          <p key={`${professor.name}-review-${reviewIdx}`}>
-                            <span className="font-semibold text-orange-200">{review.student}:</span> {review.text}
-                          </p>
+                          <div key={`${professor.name}-review-${reviewIdx}`} className="flex items-start justify-between gap-2">
+                            <p className="text-sm text-slate-100">
+                              <span className="font-semibold text-orange-200">{review.student}:</span> {review.text}
+                            </p>
+                            {isAuthed && (
+                              <button
+                                onClick={() => handleDeleteReview(professor.name, reviewIdx)}
+                                className="rounded border border-white/20 px-2 py-1 text-[11px] text-red-300 hover:border-red-400 hover:text-white"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
