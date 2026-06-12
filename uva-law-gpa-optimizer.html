@@ -120,6 +120,9 @@
     border-radius:12px;padding:11px 14px;margin-bottom:9px;opacity:0;transform:translateX(-14px);transition:.5s;cursor:default}
   .slot.in{opacity:1;transform:none}
   .slot:hover{background:rgba(229,114,0,.09);border-color:rgba(229,114,0,.4)}
+  .slot.fill{border-style:dashed;border-color:rgba(67,198,224,.35);background:rgba(67,198,224,.05)}
+  .slot.ghost{opacity:.55;border-style:dotted}
+  .slot.ghost .ic{background:rgba(61,220,151,.12)}
   .slot .nm{font-weight:600;font-size:14px;flex:1;line-height:1.35}
   .slot .nm small{display:block;color:var(--dim);font-weight:500;font-size:11.5px;margin-top:2px}
   .slot .gg{font-family:Georgia,serif;font-weight:700;color:var(--gold);font-size:17px}
@@ -185,15 +188,16 @@
   <header>
     <div class="kicker"><span class="dot"></span> UVA LAW &middot; 2L / 3L COURSE STRATEGY &middot; GRADE-DATA DRIVEN</div>
     <h1>The <span class="grad">3.67</span> Plan</h1>
-    <p class="sub">Ten upper-level courses, selected from real UVA Law grade distributions, that <b>maximize expected GPA</b> while
-    covering every remaining JD requirement — Professional Responsibility, the upper-level writing requirement, and 6+ experiential credits.
-    Built for a student who has completed the 1L core plus <b>Corporations</b> and <b>International Human Rights Law</b>.</p>
+    <p class="sub">A complete, followable 2L + 3L schedule built from real UVA Law grade distributions: a <b>top-10 GPA-maximizing core</b> plus four
+    bar-smart credit fillers, so every semester clears the <b>12-credit minimum</b> and you graduate past <b>86 total credits</b> with Professional
+    Responsibility, the upper-level writing requirement, and 6+ experiential credits all covered. Built for a student who has completed the 1L core
+    plus <b>Corporations</b> and <b>International Human Rights Law</b> (~38 credits banked).</p>
 
     <div class="statbar">
       <div class="stat"><div class="num" data-count="3.00" data-dec="2">0</div><div class="lbl">Current GPA</div></div>
-      <div class="stat"><div class="num up" data-count="3.67" data-dec="2">0</div><div class="lbl">Plan Average GPA</div><div class="delta">+0.67</div></div>
-      <div class="stat"><div class="num up" id="cumStat" data-count="3.38" data-dec="2">0</div><div class="lbl">Projected Cumulative</div><div class="delta">+0.38</div></div>
-      <div class="stat"><div class="num" data-count="10" data-dec="0">0</div><div class="lbl">Courses Selected</div></div>
+      <div class="stat"><div class="num up" id="planStat" data-count="3.65" data-dec="2">0</div><div class="lbl">Schedule Avg (credit-weighted)</div><div class="delta" id="planDelta">+0.65</div></div>
+      <div class="stat"><div class="num up" id="cumStat" data-count="3.37" data-dec="2">0</div><div class="lbl">Projected Cumulative</div><div class="delta" id="cumDelta">+0.37</div></div>
+      <div class="stat"><div class="num" id="crStat" data-count="90" data-dec="0">0</div><div class="lbl">Total JD Credits (86 needed)</div></div>
     </div>
 
     <div class="reqs" id="reqChips"></div>
@@ -214,22 +218,24 @@
 
     <div class="proj">
       <h3>📈 Cumulative GPA Projector</h3>
-      <p>Assumes ~37 graded credits so far (1L core + Corporations + Int'l Human Rights) at your current 3.00. Drag to set how many of your remaining ~49 credits you complete at the plan's 3.67 average — the rest stay at 3.00.</p>
+      <p>Assumes ~38 graded credits so far (1L core + Corporations + Int'l Human Rights) at your current 3.00. Drag to set how many of the schedule's 52 credits you actually land at its 3.65 weighted average — the rest are assumed to stay at 3.00.</p>
       <div class="projGrid">
         <div>
-          <input type="range" id="credSlider" min="0" max="49" value="49" step="1">
-          <div class="sliderLbl"><span>0 credits</span><span id="credLbl" style="color:var(--gold);font-weight:700">49 upper-level credits @ 3.67</span><span>49 credits</span></div>
+          <input type="range" id="credSlider" min="0" max="52" value="52" step="1">
+          <div class="sliderLbl"><span>0 credits</span><span id="credLbl" style="color:var(--gold);font-weight:700">52 upper-level credits @ 3.65</span><span>52 credits</span></div>
         </div>
-        <div class="projOut"><div class="v" id="projV">3.38</div><div class="l">Projected cumulative GPA at graduation</div></div>
+        <div class="projOut"><div class="v" id="projV">3.37</div><div class="l">Projected cumulative GPA at graduation</div></div>
       </div>
     </div>
   </section>
 
   <!-- ============ PANEL: SCHEDULE ============ -->
   <section class="panel" id="p-sched">
-    <h2>Your Two-Year Map</h2>
-    <p class="h2sub">Three plan courses per semester (year-long clinics span both), leaving room each term for electives, journal, or more credits from the
-    <b>Full Dataset</b> tab. Requirements are front-loaded sensibly: writing seminar and PR land in 3L, clinics give one experiential anchor per year.</p>
+    <h2>Your Two-Year Map — Real, Followable Semesters</h2>
+    <p class="h2sub">Every semester clears UVA's <b>12-credit minimum</b> (14 · 13 · 13 · 12) and the four semesters add <b>52 credits</b> to your ~38 banked,
+    finishing at 90 — past the 86 required. The ten top-10 picks are solid cards; <span style="color:var(--teal)">dashed cards</span> are the four credit fillers
+    chosen for the next-best curves <i>and</i> bar coverage; dotted cards show where a year-long clinic's credits land each term.
+    Credit values are typical UVA assignments — confirm exact credits in SIS, and if a course runs ±1 credit, swap filler space, not the top-10 core.</p>
     <div id="schedule"></div>
   </section>
 
@@ -257,9 +263,11 @@
 
   <div class="note">
     <b>Read before registering:</b> ① The Supreme Court Litigation, Appellate Litigation, and Innocence Project clinics are
-    application-based and competitive — the schedule keeps Innocence Project Clinic (3.65) and Civil Rights Litigation (3.58) as named backups if you don't land one.
-    ② This dataset has no meeting times, so confirm there are no time conflicts in SIS. ③ Evidence (3.50) and Criminal Procedure Survey (3.55) aren't in the top 10
-    but are heavily bar-tested — worth slotting into your spare elective space. ④ Past curves don't guarantee future grades; professor assignments change year to year.
+    application-based and competitive — if you don't land one, swap in Innocence Project Clinic (3.65), Civil Rights Litigation (3.58, 3 cr), or
+    Con Law II: Poverty-style seminars and re-check the 12-credit floor. ② The dataset has no meeting times or credit values: credits shown are
+    typical UVA assignments — verify both in SIS before finalizing, and remember the 12–17 credits/semester window and 86-credit total are hard JD rules.
+    ③ Evidence and Crim Pro Survey were added as fillers precisely because they're heavily bar-tested; don't trade them for fluff.
+    ④ Past curves don't guarantee future grades; professor assignments change year to year.
   </div>
   <footer>Generated from vagrades grade-distribution data · GPAs computed on the dataset's A+ = 4.3 scale · For planning purposes only</footer>
 </div>
@@ -278,31 +286,46 @@ function aPct(c){let a=0,n=0;for(const g of GORDER){const k=c.grades[g]||0;n+=k;
 const ONE_L = new Set(["LAW6000","LAW6001","LAW6002","LAW6003","LAW6006","LAW6007"]);
 const TAKEN = new Set(["LAW6103","LAW6109","LAW8639"]); // Corporations, Corporations (L&B), Int'l Human Rights Law clinic
 
-/* ---------- The curated Top 10 ---------- */
+/* ---------- The curated Top 10 (cr = typical UVA credit value; confirm in SIS) ---------- */
 const PLAN = [
- {code:"LAW8625", sem:"3L · Year-Long", tags:["exp"], icon:"⚖️", why:"Highest curve in the entire dataset — every student earned an A or A-. Competitive application; backup: Innocence Project Clinic (3.65)."},
- {code:"LAW8807", sem:"3L Fall", tags:["exp"], icon:"💼", why:"87% A-range. Externship credit on your transcript while you build a job pipeline."},
- {code:"LAW9088", sem:"3L Fall", tags:["wri","sem"], icon:"✍️", why:"A.E. Dick Howard seminar — knocks out the upper-level writing requirement on the friendliest seminar curve."},
- {code:"LAW7062", sem:"2L Fall", tags:[], icon:"🏛️", why:"Caleb Nelson gave zero grades below B+ to 72 students. Elite doctrinal credential, painless curve."},
- {code:"LAW6105", sem:"2L Fall", tags:[], icon:"🏤", why:"Prestige course that clerkship-bound students take anyway — here it's also a GPA raiser (3.66, n=99)."},
- {code:"LAW7078", sem:"2L Spring", tags:[], icon:"🧭", why:"Laycock's Remedies: 70% A-range, broadly useful for litigation, and bar-adjacent."},
- {code:"LAW8603", sem:"2L · Year-Long", tags:["exp"], icon:"📜", why:"10 of 12 students got A-. Pairs real appellate briefing experience with experiential credits."},
- {code:"LAW8004", sem:"2L Spring", tags:[], icon:"🗞️", why:"Kendrick's First Amendment survey — 64% A-range across a big 75-person class."},
- {code:"LAW9240", sem:"3L Spring", tags:["sem"], icon:"🏚️", why:"Goluboff seminar, 60% A-range; second writing-credit option and a light 3L spring."},
- {code:"LAW7071", sem:"3L Spring", tags:["req"], icon:"🧑‍⚖️", why:"Mandatory for the JD and the MPRE — and its 3.52 curve still beats most electives."}
+ {code:"LAW8625", cr:6, sem:"3L · Year-Long", tags:["exp"], icon:"⚖️", why:"Highest curve in the entire dataset — every student earned an A or A-. Competitive application; backup: Innocence Project Clinic (3.65)."},
+ {code:"LAW8807", cr:3, sem:"3L Fall", tags:["exp"], icon:"💼", why:"87% A-range. Externship credit on your transcript while you build a job pipeline."},
+ {code:"LAW9088", cr:3, sem:"3L Fall", tags:["wri","sem"], icon:"✍️", why:"A.E. Dick Howard seminar — knocks out the upper-level writing requirement on the friendliest seminar curve."},
+ {code:"LAW7062", cr:3, sem:"2L Fall", tags:[], icon:"🏛️", why:"Caleb Nelson gave zero grades below B+ to 72 students. Elite doctrinal credential, painless curve."},
+ {code:"LAW6105", cr:4, sem:"2L Fall", tags:[], icon:"🏤", why:"Prestige course that clerkship-bound students take anyway — here it's also a GPA raiser (3.66, n=99)."},
+ {code:"LAW7078", cr:3, sem:"2L Spring", tags:[], icon:"🧭", why:"Laycock's Remedies: 70% A-range, broadly useful for litigation, and bar-adjacent."},
+ {code:"LAW8603", cr:6, sem:"2L · Year-Long", tags:["exp"], icon:"📜", why:"10 of 12 students got A-. Pairs real appellate briefing experience with experiential credits."},
+ {code:"LAW8004", cr:3, sem:"2L Spring", tags:[], icon:"🗞️", why:"Kendrick's First Amendment survey — 64% A-range across a big 75-person class."},
+ {code:"LAW9240", cr:3, sem:"3L Spring", tags:["sem"], icon:"🏚️", why:"Goluboff seminar, 60% A-range; second writing-credit option and a light 3L spring."},
+ {code:"LAW7071", cr:3, sem:"3L Spring", tags:["req"], icon:"🧑‍⚖️", why:"Mandatory for the JD and the MPRE — and its 3.52 curve still beats most electives."}
+];
+/* ---------- Credit fillers: next-best curves that hit the 12-credit/semester floor AND prep the bar ---------- */
+const SUPPORT = [
+ {code:"LAW6102", cr:4, sem:"2L Fall",   tags:[], icon:"🏢", why:"Best big-class curve outside the top 10 (3.61, n=176) — and a bar/clerkship staple."},
+ {code:"LAW6104", cr:4, sem:"2L Spring", tags:[], icon:"🔍", why:"Heavily bar-tested; its 3.50 curve makes it the cheapest way to buy MBE coverage."},
+ {code:"LAW7009", cr:4, sem:"3L Fall",   tags:[], icon:"🚔", why:"Bar-tested Crim Pro on a 3.55 curve — fills 3L fall to 13 credits."},
+ {code:"LAW7017", cr:3, sem:"3L Spring", tags:["sem"], icon:"🕊️", why:"3.61 curve (37% A or A+) keeps your final semester at 12 credits without pain."}
 ];
 const TAGNAMES = {req:"JD Required", wri:"Writing Req", exp:"Experiential", sem:"Seminar"};
 
 const byCode = Object.fromEntries(DATA.map(c=>[c.code,c]));
-const plan = PLAN.map(p=>{const c=byCode[p.code];return {...p,c,gpa:realGpa(c),a:aPct(c)}});
+const plan = PLAN.map(p=>{const c=byCode[p.code];return {...p,c,gpa:realGpa(c),a:aPct(c),core:true}});
+const support = SUPPORT.map(p=>{const c=byCode[p.code];return {...p,c,gpa:realGpa(c),a:aPct(c),core:false}});
+const sched = [...plan,...support];
 const PLAN_CODES = new Set(PLAN.map(p=>p.code));
+const SUPPORT_CODES = new Set(SUPPORT.map(p=>p.code));
 const planAvg = plan.reduce((s,p)=>s+p.gpa,0)/plan.length;
+const PRIOR_CR = 38, PRIOR_GPA = 3.0, JD_CR = 86;   // 1L core (~31cr) + Corporations + Int'l Human Rights
+const schedCr  = sched.reduce((s,p)=>s+p.cr,0);
+const schedAvg = sched.reduce((s,p)=>s+p.cr*p.gpa,0)/schedCr;  // credit-weighted
 
 /* ---------- Hero req chips ---------- */
 const chips = [
+ ["12+ Credits Every Semester","14 · 13 · 13 · 12"],
+ ["86 Total Credits","38 done + 52 scheduled = 90"],
  ["Professional Responsibility","LAW7071 · 3L Spring"],
- ["Upper-Level Writing","Two A.E. Howard / Goluboff seminars"],
- ["6 Experiential Credits","Two clinics + externship"],
+ ["Upper-Level Writing","Howard / Goluboff seminars"],
+ ["6 Experiential Credits","Two clinics (12 cr) + externship"],
  ["1L Core + Corporations","Already complete ✓"]
 ];
 document.getElementById("reqChips").innerHTML = chips.map(([t,s])=>
@@ -336,21 +359,30 @@ document.getElementById("cards").innerHTML = plan.map((p,i)=>`
  </div>`).join("");
 
 /* ---------- Schedule ---------- */
-function slotHTML(p){return `<div class="slot"><div class="ic">${p.icon}</div>
-  <div class="nm">${p.c.title}<small>${p.c.code} · ${p.tags.map(t=>TAGNAMES[t]).join(" · ")||"Elective"}</small></div>
+function slotHTML(p){return `<div class="slot${p.core?"":" fill"}"><div class="ic">${p.icon}</div>
+  <div class="nm">${p.c.title}<small>${p.c.code} · ${p.cr} cr · ${p.tags.map(t=>TAGNAMES[t]).join(" · ")||(p.core?"Top-10 pick":"Credit filler · bar prep")}</small></div>
   <div class="gg">${p.gpa.toFixed(2)}</div></div>`}
+function semStats(list, ylHalfCr, ylGpa){
+  const cr = list.reduce((s,p)=>s+p.cr,0) + ylHalfCr;
+  const w  = list.reduce((s,p)=>s+p.cr*p.gpa,0) + ylHalfCr*ylGpa;
+  return {cr, avg:w/cr};
+}
 function yearHTML(yr){
-  const yl = plan.find(p=>p.sem===`${yr} · Year-Long`);
-  const fall = plan.filter(p=>p.sem===`${yr} Fall`), spr = plan.filter(p=>p.sem===`${yr} Spring`);
-  const all = [yl,...fall,...spr].filter(Boolean);
-  const avg = all.reduce((s,p)=>s+p.gpa,0)/all.length;
+  const yl = sched.find(p=>p.sem===`${yr} · Year-Long`);
+  const half = yl.cr/2;
+  const fall = sched.filter(p=>p.sem===`${yr} Fall`), spr = sched.filter(p=>p.sem===`${yr} Spring`);
+  const fs = semStats(fall, half, yl.gpa), ss = semStats(spr, half, yl.gpa);
+  const ok = c => c>=12 ? `<span style="color:var(--green)">✓ ${c} cr</span>` : `<span style="color:var(--bminus)">✗ ${c} cr</span>`;
+  const yAvg = (fs.cr*fs.avg+ss.cr*ss.avg)/(fs.cr+ss.cr);
   return `<div class="year">
-    <div class="yearHead"><h3>${yr} Year</h3><div class="yAvg">expected average <b>${avg.toFixed(2)}</b></div></div>
-    <div class="ylClinic"><span class="span">Year-Long · Fall → Spring</span><span class="t">${yl.icon} ${yl.c.title}</span>
+    <div class="yearHead"><h3>${yr} Year</h3><div class="yAvg">${fs.cr+ss.cr} credits · expected average <b>${yAvg.toFixed(2)}</b></div></div>
+    <div class="ylClinic"><span class="span">Year-Long · ${half} cr Fall + ${half} cr Spring</span><span class="t">${yl.icon} ${yl.c.title}</span>
       <span class="g">${yl.gpa.toFixed(2)}</span><div class="track"><i></i></div></div>
     <div class="sems">
-      <div class="sem"><h4>Fall <span>${fall.length+1} courses + electives</span></h4>${fall.map(slotHTML).join("")}</div>
-      <div class="sem"><h4>Spring <span>${spr.length+1} courses + electives</span></h4>${spr.map(slotHTML).join("")}</div>
+      <div class="sem"><h4>Fall · avg ${fs.avg.toFixed(2)} <span>${ok(fs.cr)} — min 12 met</span></h4>${fall.map(slotHTML).join("")}
+        <div class="slot ghost"><div class="ic">📜</div><div class="nm">${yl.c.title} <small>year-long · ${half} cr counted here</small></div><div class="gg">${yl.gpa.toFixed(2)}</div></div></div>
+      <div class="sem"><h4>Spring · avg ${ss.avg.toFixed(2)} <span>${ok(ss.cr)} — min 12 met</span></h4>${spr.map(slotHTML).join("")}
+        <div class="slot ghost"><div class="ic">📜</div><div class="nm">${yl.c.title} <small>year-long · ${half} cr counted here</small></div><div class="gg">${yl.gpa.toFixed(2)}</div></div></div>
     </div></div>`;
 }
 document.getElementById("schedule").innerHTML = yearHTML("2L")+yearHTML("3L");
@@ -360,6 +392,7 @@ const rows = DATA.map(c=>{
   const g = realGpa(c), fixed = Math.abs(g - c.avgGpa) > 0.1;
   let status, pill;
   if (PLAN_CODES.has(c.code)) {status="0pick"; pill=`<span class="pill pick">★ Top-10 pick</span>`;}
+  else if (SUPPORT_CODES.has(c.code)) {status="0supp"; pill=`<span class="pill fix">＋ Credit filler</span>`;}
   else if (TAKEN.has(c.code))  {status="2taken";pill=`<span class="pill taken">Already taken</span>`;}
   else if (ONE_L.has(c.code))  {status="3onel"; pill=`<span class="pill onel">1L core</span>`;}
   else {status="1elig"; pill=`<span style="color:var(--dim);font-size:11px">eligible</span>`;}
@@ -406,13 +439,22 @@ document.getElementById("tabs").addEventListener("click",e=>{
 /* ---------- Projector ---------- */
 const slider = document.getElementById("credSlider");
 function project(){
-  const PRIOR = 37, REMAIN = 49;            // 86-credit JD: ~37 graded at 3.00 so far
   const up = +slider.value;
-  const cum = (PRIOR*3.0 + up*planAvg + (REMAIN-up)*3.0) / (PRIOR+REMAIN);
+  const cum = (PRIOR_CR*PRIOR_GPA + up*schedAvg + (schedCr-up)*PRIOR_GPA) / (PRIOR_CR+schedCr);
   document.getElementById("projV").textContent = cum.toFixed(2);
-  document.getElementById("credLbl").textContent = `${up} upper-level credits @ ${planAvg.toFixed(2)}`;
+  document.getElementById("credLbl").textContent = `${up} upper-level credits @ ${schedAvg.toFixed(2)}`;
 }
 slider.addEventListener("input",project); project();
+
+/* ---------- Hero numbers from real computation ---------- */
+{
+  const cum = (PRIOR_CR*PRIOR_GPA + schedCr*schedAvg)/(PRIOR_CR+schedCr);
+  document.getElementById("planStat").dataset.count = schedAvg.toFixed(2);
+  document.getElementById("planDelta").textContent  = "+"+(schedAvg-3).toFixed(2);
+  document.getElementById("cumStat").dataset.count  = cum.toFixed(2);
+  document.getElementById("cumDelta").textContent   = "+"+(cum-3).toFixed(2);
+  document.getElementById("crStat").dataset.count   = PRIOR_CR+schedCr;
+}
 
 /* ---------- Animations ---------- */
 function countUp(el){
