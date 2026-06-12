@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The 3.67 Plan — UVA Law GPA Optimizer</title>
+<style>
+  :root{
+    --navy:#161e38; --navy2:#1d2747; --navy3:#232D4B; --card:#222c4f;
+    --orange:#E57200; --orange2:#ff9233; --gold:#ffc46b;
+    --ink:#eef1fa; --mut:#9aa5c8; --dim:#6b7494;
+    --green:#3ddc97; --teal:#43c6e0; --pink:#ff7eb6;
+    --aplus:#3ddc97; --a:#43e08c; --aminus:#9be15d; --bplus:#ffd166; --b:#ff9f43; --bminus:#ff6b6b; --c:#c44569;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(229,114,0,.16), transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, rgba(67,198,224,.10), transparent 60%),
+      var(--navy);
+    color:var(--ink); min-height:100vh; overflow-x:hidden;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 90px}
+
+  /* ============ HERO ============ */
+  header{padding:64px 0 30px;position:relative}
+  .kicker{display:inline-flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold);border:1px solid rgba(255,196,107,.35);padding:7px 16px;border-radius:999px;background:rgba(229,114,0,.08)}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 12px var(--orange);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(40px,6.4vw,76px);line-height:1.03;margin:22px 0 14px;font-weight:700}
+  h1 .grad{background:linear-gradient(92deg,var(--orange2),var(--gold) 55%,#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--mut);font-size:17px;max-width:720px;line-height:1.65}
+  .sub b{color:var(--ink)}
+
+  .statbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:36px 0 8px}
+  .stat{background:linear-gradient(160deg,var(--card),var(--navy2));border:1px solid rgba(255,255,255,.07);
+    border-radius:var(--radius);padding:20px 22px;position:relative;overflow:hidden;opacity:0;transform:translateY(18px);transition:.6s cubic-bezier(.2,.7,.3,1)}
+  .stat.in{opacity:1;transform:none}
+  .stat::after{content:"";position:absolute;inset:0;background:radial-gradient(220px 120px at 90% 0%,rgba(229,114,0,.14),transparent 70%)}
+  .stat .num{font-family:Georgia,serif;font-size:40px;font-weight:700;color:var(--gold)}
+  .stat .num.up{color:var(--green)}
+  .stat .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:4px}
+  .stat .delta{position:absolute;top:16px;right:18px;font-size:12px;font-weight:700;color:var(--green);background:rgba(61,220,151,.12);padding:4px 10px;border-radius:999px}
+
+  /* ============ REQUIREMENTS ============ */
+  .reqs{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
+  .req{display:flex;align-items:center;gap:9px;background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.3);
+    color:#c8f7e4;font-size:13px;padding:9px 16px;border-radius:999px;opacity:0;transform:scale(.85);transition:.5s cubic-bezier(.34,1.56,.64,1)}
+  .req.in{opacity:1;transform:scale(1)}
+  .req .ck{width:18px;height:18px;border-radius:50%;background:var(--green);color:#0c2a1d;font-size:11px;font-weight:900;display:grid;place-items:center}
+
+  /* ============ TABS ============ */
+  nav.tabs{position:sticky;top:14px;z-index:50;display:flex;gap:6px;margin:46px 0 30px;background:rgba(22,30,56,.82);
+    backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:6px;width:max-content;max-width:100%;overflow:auto}
+  nav.tabs button{font:inherit;font-size:14px;font-weight:600;color:var(--mut);background:none;border:0;cursor:pointer;
+    padding:10px 22px;border-radius:999px;white-space:nowrap;transition:.25s}
+  nav.tabs button:hover{color:var(--ink)}
+  nav.tabs button.on{background:linear-gradient(120deg,var(--orange),#c85f00);color:#fff;box-shadow:0 6px 20px rgba(229,114,0,.35)}
+  .panel{display:none;animation:fadeUp .5s cubic-bezier(.2,.7,.3,1)}
+  .panel.on{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  h2{font-family:Georgia,serif;font-size:30px;margin:8px 0 6px}
+  .h2sub{color:var(--mut);font-size:14.5px;margin-bottom:24px;line-height:1.6;max-width:760px}
+
+  /* ============ TOP-10 CARDS ============ */
+  .cards{display:grid;gap:14px}
+  .course{display:grid;grid-template-columns:74px 1fr 210px;gap:20px;align-items:center;
+    background:linear-gradient(160deg,var(--card),var(--navy2));border:1px solid rgba(255,255,255,.07);
+    border-radius:var(--radius);padding:20px 24px;position:relative;overflow:hidden;
+    opacity:0;transform:translateY(24px);transition:opacity .55s,transform .55s,border-color .25s,box-shadow .25s}
+  .course.in{opacity:1;transform:none}
+  .course:hover{border-color:rgba(229,114,0,.55);box-shadow:0 14px 40px rgba(0,0,0,.35);transform:translateY(-3px)}
+  .course .rank{font-family:Georgia,serif;font-size:34px;font-weight:700;color:var(--dim);text-align:center;line-height:1}
+  .course:nth-child(1) .rank,.course:nth-child(2) .rank,.course:nth-child(3) .rank{color:var(--gold)}
+  .course .rank small{display:block;font-size:10px;letter-spacing:.18em;color:var(--dim);font-family:inherit;margin-top:4px}
+  .course .title{font-size:18.5px;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .course .code{font-size:11.5px;color:var(--dim);font-weight:600;letter-spacing:.06em}
+  .course .meta{color:var(--mut);font-size:13px;margin-top:5px;line-height:1.5}
+  .course .why{color:var(--gold);font-size:12.5px;margin-top:7px;font-style:italic}
+  .tag{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+  .tag.req{background:rgba(255,126,182,.14);color:var(--pink);border:1px solid rgba(255,126,182,.4)}
+  .tag.wri{background:rgba(67,198,224,.13);color:var(--teal);border:1px solid rgba(67,198,224,.4)}
+  .tag.exp{background:rgba(61,220,151,.12);color:var(--green);border:1px solid rgba(61,220,151,.4)}
+  .tag.sem{background:rgba(255,196,107,.12);color:var(--gold);border:1px solid rgba(255,196,107,.35)}
+  .gpaCol{text-align:right}
+  .gpaBig{font-family:Georgia,serif;font-size:36px;font-weight:700;color:var(--gold)}
+  .aRange{font-size:12px;color:var(--green);font-weight:700;margin:2px 0 10px}
+  .distBar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.06)}
+  .distBar span{display:block;height:100%;width:0;transition:width 1.1s cubic-bezier(.2,.7,.3,1)}
+  .distLegendRow{font-size:10.5px;color:var(--dim);margin-top:6px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+  .distLegendRow i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
+  .distLegendRow b{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  /* ============ SCHEDULE ============ */
+  .year{margin-bottom:42px}
+  .yearHead{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  .yearHead h3{font-family:Georgia,serif;font-size:24px}
+  .yearHead .yAvg{font-size:13px;color:var(--mut)}
+  .yearHead .yAvg b{color:var(--gold);font-size:16px;font-family:Georgia,serif}
+  .ylClinic{position:relative;border:1px dashed rgba(61,220,151,.5);background:rgba(61,220,151,.06);
+    border-radius:var(--radius);padding:16px 22px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    opacity:0;transform:translateY(16px);transition:.55s}
+  .ylClinic.in{opacity:1;transform:none}
+  .ylClinic .span{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--green);
+    border:1px solid rgba(61,220,151,.45);padding:4px 11px;border-radius:999px;background:rgba(61,220,151,.1)}
+  .ylClinic .t{font-weight:700;font-size:16px}
+  .ylClinic .g{margin-left:auto;font-family:Georgia,serif;font-size:24px;color:var(--gold);font-weight:700}
+  .ylClinic .track{position:absolute;left:22px;right:22px;bottom:6px;height:3px;border-radius:99px;background:rgba(61,220,151,.15);overflow:hidden}
+  .ylClinic .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--teal));transition:width 1.4s ease}
+  .sems{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .sem{background:linear-gradient(165deg,var(--card),var(--navy2));border:1px solid rgba(255,255,255,.07);border-radius:var(--radius);padding:18px 20px}
+  .sem h4{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--orange2);margin-bottom:13px;display:flex;justify-content:space-between}
+  .sem h4 span{color:var(--dim);letter-spacing:0}
+  .slot{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:11px 14px;margin-bottom:9px;opacity:0;transform:translateX(-14px);transition:.5s;cursor:default}
+  .slot.in{opacity:1;transform:none}
+  .slot:hover{background:rgba(229,114,0,.09);border-color:rgba(229,114,0,.4)}
+  .slot .nm{font-weight:600;font-size:14px;flex:1;line-height:1.35}
+  .slot .nm small{display:block;color:var(--dim);font-weight:500;font-size:11.5px;margin-top:2px}
+  .slot .gg{font-family:Georgia,serif;font-weight:700;color:var(--gold);font-size:17px}
+  .slot .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:16px;background:rgba(229,114,0,.12);flex:none}
+
+  /* ============ PROJECTOR ============ */
+  .proj{background:linear-gradient(135deg,rgba(229,114,0,.12),rgba(67,198,224,.08)),linear-gradient(160deg,var(--card),var(--navy2));
+    border:1px solid rgba(229,114,0,.3);border-radius:22px;padding:30px 32px;margin-top:40px}
+  .proj h3{font-family:Georgia,serif;font-size:22px;margin-bottom:6px}
+  .proj p{color:var(--mut);font-size:13.5px;margin-bottom:20px;line-height:1.6}
+  .projGrid{display:grid;grid-template-columns:1fr 220px;gap:30px;align-items:center}
+  input[type=range]{width:100%;appearance:none;height:6px;border-radius:99px;background:rgba(255,255,255,.12);outline:none}
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--orange);border:3px solid #fff;box-shadow:0 0 16px rgba(229,114,0,.7);cursor:pointer}
+  .sliderLbl{display:flex;justify-content:space-between;color:var(--dim);font-size:12px;margin-top:8px}
+  .projOut{text-align:center}
+  .projOut .v{font-family:Georgia,serif;font-size:52px;font-weight:700;color:var(--green)}
+  .projOut .l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:2px}
+
+  /* ============ TABLE ============ */
+  .toolrow{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+    color:var(--ink);font:inherit;font-size:14px;padding:12px 16px;outline:none;transition:.25s}
+  .search:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(229,114,0,.18)}
+  .search::placeholder{color:var(--dim)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);text-align:left;
+    padding:10px 12px;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:74px;background:var(--navy);z-index:5}
+  thead th:hover{color:var(--orange2)}
+  thead th .arr{opacity:.6}
+  tbody tr{border-top:1px solid rgba(255,255,255,.05);transition:background .2s}
+  tbody tr:hover{background:rgba(229,114,0,.06)}
+  tbody td{padding:11px 12px;vertical-align:middle}
+  td .tcode{color:var(--dim);font-size:11px}
+  td .ttl{font-weight:600}
+  .gcell{font-family:Georgia,serif;font-weight:700;color:var(--gold);font-size:15px}
+  .miniBar{width:110px;height:7px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+  .miniBar i{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--gold));border-radius:99px}
+  .pill{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .pill.pick{background:rgba(255,196,107,.15);color:var(--gold);border:1px solid rgba(255,196,107,.4)}
+  .pill.taken{background:rgba(255,126,182,.12);color:var(--pink);border:1px solid rgba(255,126,182,.35)}
+  .pill.onel{background:rgba(255,255,255,.07);color:var(--dim);border:1px solid rgba(255,255,255,.12)}
+  .pill.fix{background:rgba(67,198,224,.1);color:var(--teal);border:1px solid rgba(67,198,224,.35)}
+
+  .note{margin-top:46px;border-left:3px solid var(--orange);background:rgba(229,114,0,.06);
+    border-radius:0 14px 14px 0;padding:18px 22px;color:var(--mut);font-size:13px;line-height:1.75}
+  .note b{color:var(--ink)}
+  footer{margin-top:34px;color:var(--dim);font-size:12px;text-align:center}
+
+  @media(max-width:840px){
+    .course{grid-template-columns:50px 1fr}
+    .gpaCol{grid-column:1/-1;text-align:left}
+    .distLegendRow{justify-content:flex-start}
+    .sems{grid-template-columns:1fr}
+    .projGrid{grid-template-columns:1fr}
+    thead th{top:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker"><span class="dot"></span> UVA LAW &middot; 2L / 3L COURSE STRATEGY &middot; GRADE-DATA DRIVEN</div>
+    <h1>The <span class="grad">3.67</span> Plan</h1>
+    <p class="sub">Ten upper-level courses, selected from real UVA Law grade distributions, that <b>maximize expected GPA</b> while
+    covering every remaining JD requirement — Professional Responsibility, the upper-level writing requirement, and 6+ experiential credits.
+    Built for a student who has completed the 1L core plus <b>Corporations</b> and <b>International Human Rights Law</b>.</p>
+
+    <div class="statbar">
+      <div class="stat"><div class="num" data-count="3.00" data-dec="2">0</div><div class="lbl">Current GPA</div></div>
+      <div class="stat"><div class="num up" data-count="3.67" data-dec="2">0</div><div class="lbl">Plan Average GPA</div><div class="delta">+0.67</div></div>
+      <div class="stat"><div class="num up" id="cumStat" data-count="3.38" data-dec="2">0</div><div class="lbl">Projected Cumulative</div><div class="delta">+0.38</div></div>
+      <div class="stat"><div class="num" data-count="10" data-dec="0">0</div><div class="lbl">Courses Selected</div></div>
+    </div>
+
+    <div class="reqs" id="reqChips"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="on" data-p="p-rank">🏆 Top 10 Ranked</button>
+    <button data-p="p-sched">🗓️ Semester Plan</button>
+    <button data-p="p-all">📊 Full Dataset</button>
+  </nav>
+
+  <!-- ============ PANEL: RANKED ============ -->
+  <section class="panel on" id="p-rank">
+    <h2>The Top 10, Ranked by Real Grade Data</h2>
+    <p class="h2sub">GPAs below are <b>recomputed from each course's actual grade distribution</b> (A+ = 4.3 scale, matching the dataset),
+    because several published averages in the raw data are corrupted. Hover a card to inspect its grade curve.</p>
+    <div class="cards" id="cards"></div>
+
+    <div class="proj">
+      <h3>📈 Cumulative GPA Projector</h3>
+      <p>Assumes ~37 graded credits so far (1L core + Corporations + Int'l Human Rights) at your current 3.00. Drag to set how many of your remaining ~49 credits you complete at the plan's 3.67 average — the rest stay at 3.00.</p>
+      <div class="projGrid">
+        <div>
+          <input type="range" id="credSlider" min="0" max="49" value="49" step="1">
+          <div class="sliderLbl"><span>0 credits</span><span id="credLbl" style="color:var(--gold);font-weight:700">49 upper-level credits @ 3.67</span><span>49 credits</span></div>
+        </div>
+        <div class="projOut"><div class="v" id="projV">3.38</div><div class="l">Projected cumulative GPA at graduation</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PANEL: SCHEDULE ============ -->
+  <section class="panel" id="p-sched">
+    <h2>Your Two-Year Map</h2>
+    <p class="h2sub">Three plan courses per semester (year-long clinics span both), leaving room each term for electives, journal, or more credits from the
+    <b>Full Dataset</b> tab. Requirements are front-loaded sensibly: writing seminar and PR land in 3L, clinics give one experiential anchor per year.</p>
+    <div id="schedule"></div>
+  </section>
+
+  <!-- ============ PANEL: ALL ============ -->
+  <section class="panel" id="p-all">
+    <h2>Every Course, Corrected &amp; Sortable</h2>
+    <p class="h2sub">All ${"" /* count injected */}<span id="nCourses"></span> courses from the dataset with GPA recomputed from raw grade counts.
+    Courses flagged <span class="pill fix">data fixed</span> had corrupted published averages (e.g. Trial Advocacy listed at 2.35 — the real curve is 3.49).
+    Click any column header to sort.</p>
+    <div class="toolrow">
+      <input class="search" id="q" placeholder="Search by course, code, or professor… (try “Howard” or “clinic”)">
+    </div>
+    <table id="tbl">
+      <thead><tr>
+        <th data-k="title">Course <span class="arr"></span></th>
+        <th data-k="gpa">Real GPA <span class="arr">▾</span></th>
+        <th data-k="curve">Curve</th>
+        <th data-k="aPct">% A-range <span class="arr"></span></th>
+        <th data-k="students">Students <span class="arr"></span></th>
+        <th data-k="status">Status</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </section>
+
+  <div class="note">
+    <b>Read before registering:</b> ① The Supreme Court Litigation, Appellate Litigation, and Innocence Project clinics are
+    application-based and competitive — the schedule keeps Innocence Project Clinic (3.65) and Civil Rights Litigation (3.58) as named backups if you don't land one.
+    ② This dataset has no meeting times, so confirm there are no time conflicts in SIS. ③ Evidence (3.50) and Criminal Procedure Survey (3.55) aren't in the top 10
+    but are heavily bar-tested — worth slotting into your spare elective space. ④ Past curves don't guarantee future grades; professor assignments change year to year.
+  </div>
+  <footer>Generated from vagrades grade-distribution data · GPAs computed on the dataset's A+ = 4.3 scale · For planning purposes only</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+/* ---------- GPA math ---------- */
+const SCALE = {"A+":4.3,"A":4.0,"A-":3.7,"B+":3.3,"B":3.0,"B-":2.7,"C+":2.3,"C":2.0,"C-":1.7,"D+":1.3,"D":1.0,"D-":0.7,"F":0};
+const GORDER = ["A+","A","A-","B+","B","B-","C+","C","C-","D+","D","D-","F"];
+const GCOLOR = {"A+":"var(--aplus)","A":"var(--a)","A-":"var(--aminus)","B+":"var(--bplus)","B":"var(--b)","B-":"var(--bminus)",
+  "C+":"var(--c)","C":"var(--c)","C-":"var(--c)","D+":"#8d4f6b","D":"#8d4f6b","D-":"#8d4f6b","F":"#5e3350"};
+function realGpa(c){let p=0,n=0;for(const g of GORDER){const k=c.grades[g]||0;p+=SCALE[g]*k;n+=k}return n?p/n:0}
+function aPct(c){let a=0,n=0;for(const g of GORDER){const k=c.grades[g]||0;n+=k;if(g[0]==="A")a+=k}return n?100*a/n:0}
+
+const ONE_L = new Set(["LAW6000","LAW6001","LAW6002","LAW6003","LAW6006","LAW6007"]);
+const TAKEN = new Set(["LAW6103","LAW6109","LAW8639"]); // Corporations, Corporations (L&B), Int'l Human Rights Law clinic
+
+/* ---------- The curated Top 10 ---------- */
+const PLAN = [
+ {code:"LAW8625", sem:"3L · Year-Long", tags:["exp"], icon:"⚖️", why:"Highest curve in the entire dataset — every student earned an A or A-. Competitive application; backup: Innocence Project Clinic (3.65)."},
+ {code:"LAW8807", sem:"3L Fall", tags:["exp"], icon:"💼", why:"87% A-range. Externship credit on your transcript while you build a job pipeline."},
+ {code:"LAW9088", sem:"3L Fall", tags:["wri","sem"], icon:"✍️", why:"A.E. Dick Howard seminar — knocks out the upper-level writing requirement on the friendliest seminar curve."},
+ {code:"LAW7062", sem:"2L Fall", tags:[], icon:"🏛️", why:"Caleb Nelson gave zero grades below B+ to 72 students. Elite doctrinal credential, painless curve."},
+ {code:"LAW6105", sem:"2L Fall", tags:[], icon:"🏤", why:"Prestige course that clerkship-bound students take anyway — here it's also a GPA raiser (3.66, n=99)."},
+ {code:"LAW7078", sem:"2L Spring", tags:[], icon:"🧭", why:"Laycock's Remedies: 70% A-range, broadly useful for litigation, and bar-adjacent."},
+ {code:"LAW8603", sem:"2L · Year-Long", tags:["exp"], icon:"📜", why:"10 of 12 students got A-. Pairs real appellate briefing experience with experiential credits."},
+ {code:"LAW8004", sem:"2L Spring", tags:[], icon:"🗞️", why:"Kendrick's First Amendment survey — 64% A-range across a big 75-person class."},
+ {code:"LAW9240", sem:"3L Spring", tags:["sem"], icon:"🏚️", why:"Goluboff seminar, 60% A-range; second writing-credit option and a light 3L spring."},
+ {code:"LAW7071", sem:"3L Spring", tags:["req"], icon:"🧑‍⚖️", why:"Mandatory for the JD and the MPRE — and its 3.52 curve still beats most electives."}
+];
+const TAGNAMES = {req:"JD Required", wri:"Writing Req", exp:"Experiential", sem:"Seminar"};
+
+const byCode = Object.fromEntries(DATA.map(c=>[c.code,c]));
+const plan = PLAN.map(p=>{const c=byCode[p.code];return {...p,c,gpa:realGpa(c),a:aPct(c)}});
+const PLAN_CODES = new Set(PLAN.map(p=>p.code));
+const planAvg = plan.reduce((s,p)=>s+p.gpa,0)/plan.length;
+
+/* ---------- Hero req chips ---------- */
+const chips = [
+ ["Professional Responsibility","LAW7071 · 3L Spring"],
+ ["Upper-Level Writing","Two A.E. Howard / Goluboff seminars"],
+ ["6 Experiential Credits","Two clinics + externship"],
+ ["1L Core + Corporations","Already complete ✓"]
+];
+document.getElementById("reqChips").innerHTML = chips.map(([t,s])=>
+ `<div class="req"><span class="ck">✓</span><span><b>${t}</b> &nbsp;·&nbsp; ${s}</span></div>`).join("");
+
+/* ---------- Ranked cards ---------- */
+function distBarHTML(c){
+  const total = GORDER.reduce((s,g)=>s+(c.grades[g]||0),0);
+  return `<div class="distBar">`+GORDER.filter(g=>c.grades[g]>0).map(g=>
+    `<span data-w="${(100*c.grades[g]/total).toFixed(1)}" style="background:${GCOLOR[g]}" title="${g}: ${c.grades[g]} students (${(100*c.grades[g]/total).toFixed(0)}%)"></span>`
+  ).join("")+`</div>`;
+}
+document.getElementById("cards").innerHTML = plan.map((p,i)=>`
+ <div class="course">
+   <div class="rank">${i+1}<small>RANK</small></div>
+   <div>
+     <div class="title">${p.c.title}
+       ${p.tags.map(t=>`<span class="tag ${t}">${TAGNAMES[t]}</span>`).join("")}
+       <span class="tag sem" style="background:rgba(255,255,255,.05);color:var(--mut);border-color:rgba(255,255,255,.15)">${p.sem}</span>
+     </div>
+     <div class="code">${p.c.code} · ${p.c.students} students graded</div>
+     <div class="meta">${p.c.instructors}</div>
+     <div class="why">${p.why}</div>
+   </div>
+   <div class="gpaCol">
+     <div class="gpaBig">${p.gpa.toFixed(2)}</div>
+     <div class="aRange">${p.a.toFixed(0)}% earned A-range</div>
+     ${distBarHTML(p.c)}
+     <div class="distLegendRow"><i><b style="background:var(--a)"></b>A</i><i><b style="background:var(--aminus)"></b>A-</i><i><b style="background:var(--bplus)"></b>B+</i><i><b style="background:var(--b)"></b>B↓</i></div>
+   </div>
+ </div>`).join("");
+
+/* ---------- Schedule ---------- */
+function slotHTML(p){return `<div class="slot"><div class="ic">${p.icon}</div>
+  <div class="nm">${p.c.title}<small>${p.c.code} · ${p.tags.map(t=>TAGNAMES[t]).join(" · ")||"Elective"}</small></div>
+  <div class="gg">${p.gpa.toFixed(2)}</div></div>`}
+function yearHTML(yr){
+  const yl = plan.find(p=>p.sem===`${yr} · Year-Long`);
+  const fall = plan.filter(p=>p.sem===`${yr} Fall`), spr = plan.filter(p=>p.sem===`${yr} Spring`);
+  const all = [yl,...fall,...spr].filter(Boolean);
+  const avg = all.reduce((s,p)=>s+p.gpa,0)/all.length;
+  return `<div class="year">
+    <div class="yearHead"><h3>${yr} Year</h3><div class="yAvg">expected average <b>${avg.toFixed(2)}</b></div></div>
+    <div class="ylClinic"><span class="span">Year-Long · Fall → Spring</span><span class="t">${yl.icon} ${yl.c.title}</span>
+      <span class="g">${yl.gpa.toFixed(2)}</span><div class="track"><i></i></div></div>
+    <div class="sems">
+      <div class="sem"><h4>Fall <span>${fall.length+1} courses + electives</span></h4>${fall.map(slotHTML).join("")}</div>
+      <div class="sem"><h4>Spring <span>${spr.length+1} courses + electives</span></h4>${spr.map(slotHTML).join("")}</div>
+    </div></div>`;
+}
+document.getElementById("schedule").innerHTML = yearHTML("2L")+yearHTML("3L");
+
+/* ---------- Full table ---------- */
+const rows = DATA.map(c=>{
+  const g = realGpa(c), fixed = Math.abs(g - c.avgGpa) > 0.1;
+  let status, pill;
+  if (PLAN_CODES.has(c.code)) {status="0pick"; pill=`<span class="pill pick">★ Top-10 pick</span>`;}
+  else if (TAKEN.has(c.code))  {status="2taken";pill=`<span class="pill taken">Already taken</span>`;}
+  else if (ONE_L.has(c.code))  {status="3onel"; pill=`<span class="pill onel">1L core</span>`;}
+  else {status="1elig"; pill=`<span style="color:var(--dim);font-size:11px">eligible</span>`;}
+  if (fixed) pill += ` <span class="pill fix" title="Published avg was ${c.avgGpa.toFixed(2)}; recomputed from grade counts">data fixed</span>`;
+  return {c, gpa:g, aPct:aPct(c), students:c.students, title:c.title, status, pill};
+});
+let sortK="gpa", sortDir=-1;
+function renderTable(){
+  const q = document.getElementById("q").value.toLowerCase();
+  let r = rows.filter(x=>!q || (x.c.title+" "+x.c.code+" "+x.c.instructors).toLowerCase().includes(q));
+  r.sort((a,b)=>{
+    const va = sortK==="title"?a.title:sortK==="status"?a.status:a[sortK]??a.gpa;
+    const vb = sortK==="title"?b.title:sortK==="status"?b.status:b[sortK]??b.gpa;
+    return (typeof va==="string" ? va.localeCompare(vb) : va-vb)*sortDir;
+  });
+  const max = Math.max(...rows.map(x=>x.gpa));
+  document.getElementById("tbody").innerHTML = r.map(x=>`<tr>
+    <td><div class="ttl">${x.c.title}</div><div class="tcode">${x.c.code} · ${x.c.instructors.split(",")[0]}${x.c.instructors.includes(",")?" et al.":""}</div></td>
+    <td class="gcell">${x.gpa.toFixed(2)}</td>
+    <td><div class="miniBar"><i style="width:${(100*x.gpa/max).toFixed(1)}%"></i></div></td>
+    <td>${x.aPct.toFixed(0)}%</td>
+    <td>${x.students}</td>
+    <td>${x.pill}</td></tr>`).join("");
+}
+document.getElementById("nCourses").textContent = DATA.length;
+document.getElementById("q").addEventListener("input",renderTable);
+document.querySelectorAll("thead th").forEach(th=>th.addEventListener("click",()=>{
+  const k = th.dataset.k; if(k==="curve") return;
+  if (sortK===k) sortDir*=-1; else {sortK=k; sortDir=(k==="title"||k==="status")?1:-1;}
+  document.querySelectorAll("thead .arr").forEach(a=>a.textContent="");
+  th.querySelector(".arr").textContent = sortDir===-1?"▾":"▴";
+  renderTable();
+}));
+renderTable();
+
+/* ---------- Tabs ---------- */
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id===b.dataset.p));
+  requestAnimationFrame(()=>requestAnimationFrame(reveal));
+});
+
+/* ---------- Projector ---------- */
+const slider = document.getElementById("credSlider");
+function project(){
+  const PRIOR = 37, REMAIN = 49;            // 86-credit JD: ~37 graded at 3.00 so far
+  const up = +slider.value;
+  const cum = (PRIOR*3.0 + up*planAvg + (REMAIN-up)*3.0) / (PRIOR+REMAIN);
+  document.getElementById("projV").textContent = cum.toFixed(2);
+  document.getElementById("credLbl").textContent = `${up} upper-level credits @ ${planAvg.toFixed(2)}`;
+}
+slider.addEventListener("input",project); project();
+
+/* ---------- Animations ---------- */
+function countUp(el){
+  const target = +el.dataset.count, dec = +el.dataset.dec, t0 = performance.now();
+  function tick(t){const k=Math.min(1,(t-t0)/1300), e=1-Math.pow(1-k,3);
+    el.textContent=(target*e).toFixed(dec); if(k<1) requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
+}
+function reveal(){
+  document.querySelectorAll(".panel.on .course,.panel.on .slot,.panel.on .ylClinic").forEach((el,i)=>{
+    setTimeout(()=>el.classList.add("in"), 60*i);
+  });
+  document.querySelectorAll(".panel.on .distBar span").forEach(s=>{
+    requestAnimationFrame(()=>s.style.width = s.dataset.w+"%");
+  });
+  document.querySelectorAll(".panel.on .ylClinic .track i").forEach(i=>{
+    setTimeout(()=>i.style.width="100%",300);
+  });
+}
+window.addEventListener("load",()=>{
+  document.querySelectorAll(".stat").forEach((s,i)=>setTimeout(()=>s.classList.add("in"),120*i));
+  document.querySelectorAll(".req").forEach((r,i)=>setTimeout(()=>r.classList.add("in"),500+110*i));
+  document.querySelectorAll(".stat .num").forEach(countUp);
+  reveal();
+});
+</script>
+</body>
+</html>
